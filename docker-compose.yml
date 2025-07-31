@@ -1,0 +1,110 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: bos_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: laravel
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_PASSWORD: password
+      MYSQL_USER: laravel
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    networks:
+      - bos_network
+
+  # Main Backend Service (Laravel 12 - Modular Monolith)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: bos_backend
+    restart: unless-stopped
+    volumes:
+      - ./backend:/var/www/html
+      - ./backend/storage:/var/www/html/storage
+    ports:
+      - "8000:80"
+    depends_on:
+      - mysql
+    networks:
+      - bos_network
+    environment:
+      - APP_NAME="BOS Backend"
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_URL=http://localhost:8000
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=laravel
+      - DB_USERNAME=laravel
+      - DB_PASSWORD=password
+      - SANCTUM_STATEFUL_DOMAINS=localhost:3000
+
+  # React Frontend Application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: bos_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+      - CHOKIDAR_USEPOLLING=true
+    networks:
+      - bos_network
+    stdin_open: true
+    tty: true
+
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: bos_ai_service
+    restart: unless-stopped
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./ai-service:/app
+      - ./ai-service/gcp-service-account.json:/app/gcp-service-account.json:ro
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/gcp-service-account.json
+      - DATABASE_URL=mysql://laravel:password@mysql:3306/laravel
+    networks:
+      - bos_network
+    depends_on:
+      - mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: bos_phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      - PMA_HOST=mysql
+      - PMA_PORT=3306
+      - PMA_USER=laravel
+      - PMA_PASSWORD=password
+      - MYSQL_ROOT_PASSWORD=root
+    networks:
+      - bos_network
+    depends_on:
+      - mysql
+
+volumes:
+  mysql_data:
+
+networks:
+  bos_network:
+    driver: bridge 

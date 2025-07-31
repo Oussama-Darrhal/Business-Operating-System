@@ -1,0 +1,244 @@
+---
+description: "Defines the overall project goals, architecture, and core principles for the SME Business  Operating System (BOS)."
+alwaysApply: false
+---
+# PROJECT BRIEF: SME Business Operating System (BOS)
+
+## 1. Project Name
+SME Business Operating System (BOS)
+
+## 2. Core Goal
+To develop a comprehensive, multi-tenant management system for Small and Medium Enterprises (SMEs).
+
+## 3. Target User
+Small and Medium Enterprises (SMEs), with each SME being a distinct tenant with isolated data.
+
+## 4. Core Architectural Principles (HOW)
+
+### 4.1. Backend (Main Business Logic)
+A **Modular Monolith** using Laravel.
+* This single Laravel application will house all core backend functionalities: Authentication, User Management, Complaint Management, Inventory Management, Reporting, etc.
+* It will be structured into clear, maintainable modules/domains within the same codebase (e.g., dedicated folders for `Auth`, `Complaints`, `Inventory` logic).
+* **Reasoning for Monolith:** Prioritizes faster initial development, simpler debugging, and quicker deployment for a portfolio project, while maintaining good internal modularity for future scalability considerations.
+
+### 4.2. Frontend
+A Single-Page Application (SPA) using **React** with **Tailwind CSS**.
+* Interacts with the main Laravel backend via RESTful APIs.
+* The `frontend` directory at the project root is dedicated to this.
+
+### 4.3. Specialized Services
+Dedicated microservices for highly specialized or language-specific tasks.
+* Example: An `ai_service` (likely Python-based) for AI analysis, which will remain a separate, independent Dockerized service.
+
+### 4.4. Orchestration
+All services (Backend Laravel, Frontend React, specialized AI, MySQL Database) will be orchestrated using **Docker Compose** for consistent local development, environment parity, and simplified deployment.
+
+### 4.5. Core Feature: Multi-Tenancy
+Data isolation for each SME is paramount.
+* This will be enforced primarily at the backend level using a `sme_id` column on all tenant-specific data tables.
+* Middleware will ensure all data queries are automatically scoped to the authenticated user's `sme_id`.
+
+## 5. Current Focus
+The immediate task is to implement the core Authentication and User Management functionalities within the main Laravel `backend` (Modular Monolith) and build a simple React `frontend` to test its login/signup/dashboard features. Future modules like Complaint Management will be added to this same `backend` Laravel project.
+
+## 6. UI/UX and Design Guidelines
+
+### 6.1. Overall App Feeling/Mood
+**Professional, Clean, and Modern** - The application should convey trustworthiness and competence while remaining approachable and intuitive for SME users. The design emphasizes clarity, efficiency, and user confidence through clean layouts, consistent interactions, and thoughtful visual hierarchy.
+
+### 6.2. Key UI/UX Principles
+* **Clarity First**: Prioritize clear visual hierarchy with generous whitespace and logical information grouping
+* **Consistent Interactions**: Maintain consistent behavior patterns across all components and workflows
+* **Progressive Disclosure**: Show essential information first, with advanced features accessible but not overwhelming
+* **Efficiency-Focused**: Minimize clicks and cognitive load for common business tasks
+* **Accessible Design**: Ensure proper contrast ratios, keyboard navigation, and screen reader compatibility
+* **Mobile-Responsive**: Design mobile-first with progressive enhancement for larger screens
+* **Error Prevention**: Provide clear validation feedback and prevent user errors through good UX design
+
+### 6.3. Color Palette
+
+#### Primary Colors (Purple Gradient System)
+* **Primary 50**: `#faf5ff` - Very light purple backgrounds
+* **Primary 100**: `#f3e8ff` - Light purple backgrounds and hover states
+* **Primary 500**: `#a855f7` - Main brand color, primary buttons
+* **Primary 600**: `#9333ea` - Primary button hover states
+* **Primary 700**: `#7c3aed` - Active states and pressed buttons
+* **Usage**: Primary actions, key CTAs, brand elements, progress indicators
+
+#### Secondary Colors (Neutral Gray System)
+* **Secondary 50**: `#f8fafc` - Page backgrounds and subtle containers
+* **Secondary 100**: `#f1f5f9` - Card backgrounds and dividers
+* **Secondary 200**: `#e2e8f0` - Borders and input field outlines
+* **Secondary 600**: `#475569` - Secondary text and labels
+* **Secondary 700**: `#334155` - Primary text content
+* **Secondary 900**: `#0f172a` - Headings and high-emphasis text
+* **Usage**: Text hierarchy, borders, backgrounds, secondary actions
+
+#### Semantic Colors
+* **Success**: `#22c55e` - Success states, confirmations, positive indicators
+* **Warning**: `#f59e0b` - Warning states, caution indicators
+* **Error**: `#ef4444` - Error states, validation messages, destructive actions
+* **Usage**: Status indicators, form validation, alerts, notifications
+
+#### Special Gradients
+* **Primary Gradient**: `linear-gradient(135deg, #9333ea 0%, #a855f7 100%)` - Main action buttons
+* **Primary Hover Gradient**: `linear-gradient(135deg, #7c3aed 0%, #9333ea 100%)` - Button hover states
+
+### 6.4. Typography (General)
+* **Font Family**: Inter as the primary font, with system font fallbacks
+* **Hierarchy**: Clear size and weight distinctions (2xl/bold for main headings, sm/medium for labels)
+* **Readability**: Adequate line height and letter spacing for comfortable reading
+* **Contrast**: Proper text color contrast ratios for accessibility
+
+### 6.5. Spacing & Layout (General)
+* **Generous Whitespace**: Ample spacing between elements to improve readability and reduce cognitive load
+* **Grid-Based Layouts**: Consistent spacing units (4px base, 8px, 16px, 24px, 32px multiples)
+* **Card-Based Design**: Use elevated cards with subtle shadows for content grouping
+* **Responsive Breakpoints**: Mobile-first approach with logical breakpoints for tablet and desktop
+
+### 6.6. Component Design Standards
+
+#### Buttons
+* **Primary**: Purple gradient background, white text, rounded corners (8px), subtle shadow
+* **Secondary**: Light background with border, primary color text
+* **Sizes**: Consistent padding (py-3 px-4 for standard, py-2 px-3 for small)
+
+#### Form Elements
+* **Input Fields**: Rounded corners (8px), consistent padding (px-4 py-3), focus states with primary color outline
+* **Labels**: Clear, positioned above inputs, medium font weight
+* **Validation**: Inline error messages with error color, clear success indicators
+
+#### Cards & Containers
+* **Elevation**: Subtle shadows for depth without overwhelming the interface
+* **Borders**: Rounded corners (12px for cards, 8px for smaller elements)
+* **Padding**: Consistent internal spacing (32px for main cards, 16px for smaller components)
+
+### 6.7. Iconography
+* **Style**: Simple, outlined icons for consistency
+* **Size**: Consistent sizing (16px, 20px, 24px standard sizes)
+* **Color**: Inherit text color or use semantic colors for status indicators
+* **Usage**: Support text content, never replace clear labels
+
+
+## 5. Current Focus
+The immediate task is to implement the core Authentication and User Management functionalities within the main Laravel `backend` (Modular Monolith) and build a simple React `frontend` to test its login/signup/dashboard features. Future modules like Complaint Management will be added to this same `backend` Laravel project.
+# PROJECT BRIEF: SME Business Operating System (BOS)
+
+## 1. Project Name
+SME Business Operating System (BOS)
+
+## 2. Core Goal
+To develop a comprehensive, multi-tenant management system for Small and Medium Enterprises (SMEs).
+
+## 3. Target User
+Small and Medium Enterprises (SMEs), with each SME being a distinct tenant with isolated data.
+
+## 4. Core Architectural Principles (HOW)
+
+### 4.1. Backend (Main Business Logic)
+A **Modular Monolith** using Laravel.
+* This single Laravel application will house all core backend functionalities: Authentication, User Management, Complaint Management, Inventory Management, Reporting, etc.
+* It will be structured into clear, maintainable modules/domains within the same codebase (e.g., dedicated folders for `Auth`, `Complaints`, `Inventory` logic).
+* **Reasoning for Monolith:** Prioritizes faster initial development, simpler debugging, and quicker deployment for a portfolio project, while maintaining good internal modularity for future scalability considerations.
+
+### 4.2. Frontend
+A Single-Page Application (SPA) using **React** with **Tailwind CSS**.
+* Interacts with the main Laravel backend via RESTful APIs.
+* The `frontend` directory at the project root is dedicated to this.
+
+### 4.3. Specialized Services
+Dedicated microservices for highly specialized or language-specific tasks.
+* Example: An `ai_service` (likely Python-based) for AI analysis, which will remain a separate, independent Dockerized service.
+
+### 4.4. Orchestration
+All services (Backend Laravel, Frontend React, specialized AI, MySQL Database) will be orchestrated using **Docker Compose** for consistent local development, environment parity, and simplified deployment.
+
+### 4.5. Core Feature: Multi-Tenancy
+Data isolation for each SME is paramount.
+* This will be enforced primarily at the backend level using a `sme_id` column on all tenant-specific data tables.
+* Middleware will ensure all data queries are automatically scoped to the authenticated user's `sme_id`.
+
+## 5. Current Focus
+The immediate task is to implement the core Authentication and User Management functionalities within the main Laravel `backend` (Modular Monolith) and build a simple React `frontend` to test its login/signup/dashboard features. Future modules like Complaint Management will be added to this same `backend` Laravel project.
+
+## 6. UI/UX and Design Guidelines
+
+### 6.1. Overall App Feeling/Mood
+**Professional, Clean, and Modern** - The application should convey trustworthiness and competence while remaining approachable and intuitive for SME users. The design emphasizes clarity, efficiency, and user confidence through clean layouts, consistent interactions, and thoughtful visual hierarchy.
+
+### 6.2. Key UI/UX Principles
+* **Clarity First**: Prioritize clear visual hierarchy with generous whitespace and logical information grouping
+* **Consistent Interactions**: Maintain consistent behavior patterns across all components and workflows
+* **Progressive Disclosure**: Show essential information first, with advanced features accessible but not overwhelming
+* **Efficiency-Focused**: Minimize clicks and cognitive load for common business tasks
+* **Accessible Design**: Ensure proper contrast ratios, keyboard navigation, and screen reader compatibility
+* **Mobile-Responsive**: Design mobile-first with progressive enhancement for larger screens
+* **Error Prevention**: Provide clear validation feedback and prevent user errors through good UX design
+
+### 6.3. Color Palette
+
+#### Primary Colors (Purple Gradient System)
+* **Primary 50**: `#faf5ff` - Very light purple backgrounds
+* **Primary 100**: `#f3e8ff` - Light purple backgrounds and hover states
+* **Primary 500**: `#a855f7` - Main brand color, primary buttons
+* **Primary 600**: `#9333ea` - Primary button hover states
+* **Primary 700**: `#7c3aed` - Active states and pressed buttons
+* **Usage**: Primary actions, key CTAs, brand elements, progress indicators
+
+#### Secondary Colors (Neutral Gray System)
+* **Secondary 50**: `#f8fafc` - Page backgrounds and subtle containers
+* **Secondary 100**: `#f1f5f9` - Card backgrounds and dividers
+* **Secondary 200**: `#e2e8f0` - Borders and input field outlines
+* **Secondary 600**: `#475569` - Secondary text and labels
+* **Secondary 700**: `#334155` - Primary text content
+* **Secondary 900**: `#0f172a` - Headings and high-emphasis text
+* **Usage**: Text hierarchy, borders, backgrounds, secondary actions
+
+#### Semantic Colors
+* **Success**: `#22c55e` - Success states, confirmations, positive indicators
+* **Warning**: `#f59e0b` - Warning states, caution indicators
+* **Error**: `#ef4444` - Error states, validation messages, destructive actions
+* **Usage**: Status indicators, form validation, alerts, notifications
+
+#### Special Gradients
+* **Primary Gradient**: `linear-gradient(135deg, #9333ea 0%, #a855f7 100%)` - Main action buttons
+* **Primary Hover Gradient**: `linear-gradient(135deg, #7c3aed 0%, #9333ea 100%)` - Button hover states
+
+### 6.4. Typography (General)
+* **Font Family**: Inter as the primary font, with system font fallbacks
+* **Hierarchy**: Clear size and weight distinctions (2xl/bold for main headings, sm/medium for labels)
+* **Readability**: Adequate line height and letter spacing for comfortable reading
+* **Contrast**: Proper text color contrast ratios for accessibility
+
+### 6.5. Spacing & Layout (General)
+* **Generous Whitespace**: Ample spacing between elements to improve readability and reduce cognitive load
+* **Grid-Based Layouts**: Consistent spacing units (4px base, 8px, 16px, 24px, 32px multiples)
+* **Card-Based Design**: Use elevated cards with subtle shadows for content grouping
+* **Responsive Breakpoints**: Mobile-first approach with logical breakpoints for tablet and desktop
+
+### 6.6. Component Design Standards
+
+#### Buttons
+* **Primary**: Purple gradient background, white text, rounded corners (8px), subtle shadow
+* **Secondary**: Light background with border, primary color text
+* **Sizes**: Consistent padding (py-3 px-4 for standard, py-2 px-3 for small)
+
+#### Form Elements
+* **Input Fields**: Rounded corners (8px), consistent padding (px-4 py-3), focus states with primary color outline
+* **Labels**: Clear, positioned above inputs, medium font weight
+* **Validation**: Inline error messages with error color, clear success indicators
+
+#### Cards & Containers
+* **Elevation**: Subtle shadows for depth without overwhelming the interface
+* **Borders**: Rounded corners (12px for cards, 8px for smaller elements)
+* **Padding**: Consistent internal spacing (32px for main cards, 16px for smaller components)
+
+### 6.7. Iconography
+* **Style**: Simple, outlined icons for consistency
+* **Size**: Consistent sizing (16px, 20px, 24px standard sizes)
+* **Color**: Inherit text color or use semantic colors for status indicators
+* **Usage**: Support text content, never replace clear labels
+
+
+## 5. Current Focus
+The immediate task is to implement the core Authentication and User Management functionalities within the main Laravel `backend` (Modular Monolith) and build a simple React `frontend` to test its login/signup/dashboard features. Future modules like Complaint Management will be added to this same `backend` Laravel project.

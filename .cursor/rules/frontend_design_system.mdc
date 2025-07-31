@@ -1,0 +1,121 @@
+---
+description: "UI/UX Design System and Frontend Guidelines for the SME Business Operating System (BOS). Apply these rules when working on React components, styling, user interface, or user experience tasks."
+alwaysApply: false
+---
+# FRONTEND DESIGN SYSTEM: SME Business Operating System (BOS)
+
+## 1. Overall App Feeling/Mood
+**Professional, Clean, and Modern** - The application should convey trustworthiness and competence while remaining approachable and intuitive for SME users. The design emphasizes clarity, efficiency, and user confidence through clean layouts, consistent interactions, and thoughtful visual hierarchy.
+
+## 2. Key UI/UX Principles
+* **Clarity First**: Prioritize clear visual hierarchy with generous whitespace and logical information grouping
+* **Consistent Interactions**: Maintain consistent behavior patterns across all components and workflows
+* **Progressive Disclosure**: Show essential information first, with advanced features accessible but not overwhelming
+* **Efficiency-Focused**: Minimize clicks and cognitive load for common business tasks
+* **Accessible Design**: Ensure proper contrast ratios, keyboard navigation, and screen reader compatibility
+* **Mobile-Responsive**: Design mobile-first with progressive enhancement for larger screens
+* **Error Prevention**: Provide clear validation feedback and prevent user errors through good UX design
+
+## 3. Color Palette
+
+### 3.1. Primary Colors (Purple Gradient System)
+* **Primary 50**: `#faf5ff` - Very light purple backgrounds
+* **Primary 100**: `#f3e8ff` - Light purple backgrounds and hover states
+* **Primary 500**: `#a855f7` - Main brand color, primary buttons
+* **Primary 600**: `#9333ea` - Primary button hover states
+* **Primary 700**: `#7c3aed` - Active states and pressed buttons
+* **Usage**: Primary actions, key CTAs, brand elements, progress indicators
+
+### 3.2. Secondary Colors (Neutral Gray System)
+* **Secondary 50**: `#f8fafc` - Page backgrounds and subtle containers
+* **Secondary 100**: `#f1f5f9` - Card backgrounds and dividers
+* **Secondary 200**: `#e2e8f0` - Borders and input field outlines
+* **Secondary 600**: `#475569` - Secondary text and labels
+* **Secondary 700**: `#334155` - Primary text content
+* **Secondary 900**: `#0f172a` - Headings and high-emphasis text
+* **Usage**: Text hierarchy, borders, backgrounds, secondary actions
+
+### 3.3. Semantic Colors
+* **Success**: `#22c55e` - Success states, confirmations, positive indicators
+* **Warning**: `#f59e0b` - Warning states, caution indicators
+* **Error**: `#ef4444` - Error states, validation messages, destructive actions
+* **Usage**: Status indicators, form validation, alerts, notifications
+
+### 3.4. Special Gradients
+* **Primary Gradient**: `linear-gradient(135deg, #9333ea 0%, #a855f7 100%)` - Main action buttons
+* **Primary Hover Gradient**: `linear-gradient(135deg, #7c3aed 0%, #9333ea 100%)` - Button hover states
+
+## 4. Typography
+* **Font Family**: Inter as the primary font, with system font fallbacks
+* **Hierarchy**: Clear size and weight distinctions (2xl/bold for main headings, sm/medium for labels)
+* **Readability**: Adequate line height and letter spacing for comfortable reading
+* **Contrast**: Proper text color contrast ratios for accessibility
+
+## 5. Spacing & Layout
+* **Generous Whitespace**: Ample spacing between elements to improve readability and reduce cognitive load
+* **Grid-Based Layouts**: Consistent spacing units (4px base, 8px, 16px, 24px, 32px multiples)
+* **Card-Based Design**: Use elevated cards with subtle shadows for content grouping
+* **Responsive Breakpoints**: Mobile-first approach with logical breakpoints for tablet and desktop
+
+## 6. Component Design Standards
+
+### 6.1. Buttons
+* **Primary**: Purple gradient background, white text, rounded corners (8px), subtle shadow
+* **Secondary**: Light background with border, primary color text
+* **Sizes**: Consistent padding (py-3 px-4 for standard, py-2 px-3 for small)
+* **States**: Hover, focus, active, and disabled states clearly defined
+
+### 6.2. Form Elements
+* **Input Fields**: Rounded corners (8px), consistent padding (px-4 py-3), focus states with primary color outline
+* **Labels**: Clear, positioned above inputs, medium font weight
+* **Validation**: Inline error messages with error color, clear success indicators
+* **Placeholders**: Helpful, concise placeholder text
+
+### 6.3. Cards & Containers
+* **Elevation**: Subtle shadows for depth without overwhelming the interface
+* **Borders**: Rounded corners (12px for cards, 8px for smaller elements)
+* **Padding**: Consistent internal spacing (32px for main cards, 16px for smaller components)
+* **Background**: White cards on light gray backgrounds for clear separation
+
+### 6.4. Navigation & Interaction
+* **Links**: Primary color with underline on hover
+* **Active States**: Clear visual feedback for interactive elements
+* **Loading States**: Subtle spinners and skeleton screens
+* **Transitions**: Smooth 200ms transitions for hover and focus states
+
+## 7. Iconography
+* **Style**: Simple, outlined icons for consistency (preferably from Heroicons or similar)
+* **Size**: Consistent sizing (16px, 20px, 24px standard sizes)
+* **Color**: Inherit text color or use semantic colors for status indicators
+* **Usage**: Support text content, never replace clear labels
+
+## 8. Implementation Guidelines
+
+### 8.1. Tailwind CSS Usage
+* Use the custom color palette defined in `tailwind.config.js`
+* Leverage utility classes for consistent spacing and sizing
+* Create reusable component classes when needed
+* Follow the defined gradient and shadow utilities
+
+### 8.2. React Component Standards
+* Keep components focused and reusable
+* Use proper prop validation and TypeScript when possible
+* Implement proper accessibility attributes (ARIA labels, roles)
+* Follow React best practices for state management and lifecycle
+
+### 8.3. Responsive Design
+* Mobile-first approach with progressive enhancement
+* Test on common breakpoints (sm: 640px, md: 768px, lg: 1024px, xl: 1280px)
+* Ensure touch-friendly interaction areas (minimum 44px touch targets)
+* Optimize for both portrait and landscape orientations
+
+## 9. Accessibility Requirements
+* Maintain WCAG 2.1 AA compliance
+* Ensure proper color contrast ratios (4.5:1 for normal text, 3:1 for large text)
+* Implement keyboard navigation for all interactive elements
+* Provide screen reader support with proper semantic HTML and ARIA attributes
+* Include focus indicators that meet accessibility standards
+description:
+globs:
+alwaysApply: false
+---
