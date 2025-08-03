@@ -24,6 +24,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/oauth/google/login', [AuthController::class, 'googleLogin']);
 Route::post('/oauth/google/register', [AuthController::class, 'googleRegister']);
 
+
 // Protected routes (require authentication)
 Route::middleware(['auth:sanctum'])->group(function () {
     // Basic authenticated user endpoint

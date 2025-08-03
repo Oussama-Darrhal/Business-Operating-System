@@ -28,7 +28,7 @@ class AuthController extends Controller
             $validator = Validator::make($request->all(), [
                 'sme_name' => 'required|string|max:255|unique:smes,name',
                 'user_name' => 'required|string|max:255',
-                'email' => 'required|string|email:rfc,dns|max:255|unique:users,email|unique:smes,email',
+                'email' => 'required|string|email:rfc|max:255|unique:users,email|unique:smes,email',
                 'password' => 'required|string|min:8|confirmed',
                 'business_type' => 'nullable|string|max:100',
                 'phone' => 'nullable|string|max:20',
@@ -187,7 +187,7 @@ class AuthController extends Controller
             }
 
             // Check if SME is active
-            if ($user->sme->status !== 'active') {
+            if (!$user->sme || $user->sme->status !== 'active') {
                 Log::warning('Login attempt with inactive SME', [
                     'user_id' => $user->id,
                     'sme_id' => $user->sme_id,

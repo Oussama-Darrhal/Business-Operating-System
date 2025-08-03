@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-// import { useAuth } from '../utils/AuthContext';
+import { useAuth } from '../utils/AuthContext';
 
 const DashboardPage = () => {
-  // const { user, logout } = useAuth();
+  const { user, logout } = useAuth();
   const [loading, setLoading] = useState(false);
 
   const handleLogout = async () => {
     setLoading(true);
     try {
-      // await logout();
+      await logout();
     } catch (error) {
       console.error('Logout error:', error);
     } finally {

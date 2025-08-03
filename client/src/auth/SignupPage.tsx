@@ -231,6 +231,8 @@ const SignupPage = () => {
 
     try {
       const result = await registerSme(data);
+
+      console.log(result)
       
       if (result.success) {
         // Success is handled by the AuthContext
@@ -729,7 +731,7 @@ const SignupPage = () => {
                     ? 'border-purple-500 focus:border-purple-600 ring-4 ring-purple-500/20 bg-white bg-opacity-75 shadow-md'
                     : field.value 
                       ? 'border-purple-300 hover:border-purple-400 bg-white bg-opacity-75 shadow-sm'
-                      : 'border-gray-300 hover:border-gray-400 hover:bg-white hover:bg-opacity-75 shadow-sm hover:shadow-md'
+                      : 'border-gray-300 hover:border-gray-100 hover:bg-white hover:bg-opacity-75 shadow-sm hover:shadow-md'
               } focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60 text-gray-900 text-base font-medium appearance-none cursor-pointer`}
               aria-describedby={errors[name] ? `${name}-error` : undefined}
               aria-invalid={errors[name] ? "true" : "false"}
@@ -1226,7 +1228,7 @@ const SignupPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div className="min-h-screen min-w-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div 

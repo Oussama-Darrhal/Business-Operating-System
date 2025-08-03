@@ -1,7 +1,7 @@
 <?php
 
+// config/cors.php
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Cross-Origin Resource Sharing (CORS) Configuration
@@ -21,10 +21,11 @@ return [
 
     'allowed_origins' => [
         'http://localhost:3000',
+        'http://localhost:5173', // Vite default port
         'http://127.0.0.1:3000',
-        'http://localhost:3001',
-        'http://127.0.0.1:3001',
-        // Add your production frontend URL here when deploying
+        'http://127.0.0.1:5173',
+        // Add your production domain here
+        // 'https://yourdomain.com',
     ],
 
     'allowed_origins_patterns' => [],
@@ -35,6 +36,9 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => false, // Set to false for token-based API
+    'supports_credentials' => true,
 
 ];
+
+// Alternative: In your .env file, you can also set:
+// SANCTUM_STATEFUL_DOMAINS=localhost:3000,localhost:5173,127.0.0.1:3000,127.0.0.1:5173

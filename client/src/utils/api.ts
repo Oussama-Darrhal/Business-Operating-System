@@ -1,5 +1,5 @@
 // API configuration
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5173';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 
 // Token management utilities
@@ -73,6 +73,8 @@ const handleApiError = (error, response = null) => {
 export const apiCall = async (endpoint, options = {}, requiresAuth = false) => {
   const url = `${API_BASE_URL}${endpoint}`;
   
+  console.log('[API URL]', url);
+
   // Default headers
   const defaultHeaders = {
     'Content-Type': 'application/json',
@@ -101,6 +103,8 @@ export const apiCall = async (endpoint, options = {}, requiresAuth = false) => {
   try {
     const response = await fetch(url, config);
     
+    console.log(response)
+
     // Check if response is JSON
     const contentType = response.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {

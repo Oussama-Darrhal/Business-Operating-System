@@ -1,5 +1,5 @@
 /**
- * Google OAuth Integration Utility
+ * Fixed Google OAuth Integration Utility
  * Uses Google Identity Services for secure OAuth authentication
  */
 
@@ -40,6 +40,8 @@ const GOOGLE_CONFIG: GoogleConfig = {
 // Global state
 let googleInitialized = false;
 let googleScript: HTMLScriptElement | null = null;
+let currentResolve: ((value: GoogleAuthResponse) => void) | null = null;
+let currentReject: ((reason?: any) => void) | null = null;
 
 // Extend Window interface to include Google types
 declare global {
@@ -53,13 +55,21 @@ declare global {
             auto_select?: boolean;
             cancel_on_tap_outside?: boolean;
           }) => void;
-          prompt: (notificationCallback: (notification: {
+          prompt: (notificationCallback?: (notification: {
             isNotDisplayed: () => boolean;
             isSkippedMoment: () => boolean;
+            getNotDisplayedReason?: () => string;
+            getSkippedReason?: () => string;
           }) => void) => void;
           renderButton: (
             element: HTMLElement,
-            options: { theme: string; size: string; click_listener: () => void }
+            options: { 
+              theme: string; 
+              size: string; 
+              type?: string;
+              text?: string;
+              click_listener?: () => void 
+            }
           ) => void;
           disableAutoSelect: () => void;
         };
@@ -75,7 +85,7 @@ declare global {
  */
 export const initializeGoogleAuth = (): Promise<boolean> => {
   return new Promise((resolve) => {
-    if (googleInitialized) {
+    if (googleInitialized && window.google?.accounts?.id) {
       resolve(true);
       return;
     }
@@ -87,9 +97,20 @@ export const initializeGoogleAuth = (): Promise<boolean> => {
     }
 
     // Check if script already exists
-    if (document.querySelector('#google-identity-services')) {
-      googleInitialized = true;
-      resolve(true);
+    const existingScript = document.querySelector('#google-identity-services');
+    if (existingScript) {
+      // Wait for script to load if it exists
+      if (window.google?.accounts?.id) {
+        googleInitialized = true;
+        setupGoogleCallback();
+        resolve(true);
+      } else {
+        existingScript.addEventListener('load', () => {
+          googleInitialized = true;
+          setupGoogleCallback();
+          resolve(true);
+        });
+      }
       return;
     }
 
@@ -103,14 +124,7 @@ export const initializeGoogleAuth = (): Promise<boolean> => {
     googleScript.onload = () => {
       try {
         if (window.google?.accounts?.id) {
-          // Initialize Google Identity Services
-          window.google.accounts.id.initialize({
-            client_id: GOOGLE_CONFIG.client_id,
-            callback: window.handleGoogleCallback || (() => {}),
-            auto_select: GOOGLE_CONFIG.auto_select,
-            cancel_on_tap_outside: GOOGLE_CONFIG.cancel_on_tap_outside,
-          });
-          
+          setupGoogleCallback();
           googleInitialized = true;
           console.log('Google OAuth initialized successfully');
           resolve(true);
@@ -134,7 +148,63 @@ export const initializeGoogleAuth = (): Promise<boolean> => {
 };
 
 /**
- * Trigger Google OAuth popup
+ * Setup Google callback function
+ */
+const setupGoogleCallback = () => {
+  if (!window.google?.accounts?.id) return;
+
+  // Initialize Google Identity Services
+  window.google.accounts.id.initialize({
+    client_id: GOOGLE_CONFIG.client_id,
+    callback: handleGoogleResponse,
+    auto_select: GOOGLE_CONFIG.auto_select,
+    cancel_on_tap_outside: GOOGLE_CONFIG.cancel_on_tap_outside,
+    use_fedcm_for_prompt: false, // Disable FedCM to avoid CORS issues
+  });
+
+  // Set global callback
+  window.handleGoogleCallback = handleGoogleResponse;
+};
+
+/**
+ * Handle Google OAuth response
+ */
+const handleGoogleResponse = (response: { credential: string }) => {
+  try {
+    if (response.credential) {
+      const userInfo = parseJWT(response.credential);
+      const result: GoogleAuthResponse = {
+        success: true,
+        credential: response.credential,
+        userInfo,
+      };
+
+      if (currentResolve) {
+        currentResolve(result);
+        currentResolve = null;
+        currentReject = null;
+      }
+    } else {
+      const error = 'No credential received from Google';
+      console.error(error);
+      if (currentReject) {
+        currentReject(new Error(error));
+        currentResolve = null;
+        currentReject = null;
+      }
+    }
+  } catch (error) {
+    console.error('Failed to process Google response:', error);
+    if (currentReject) {
+      currentReject(error);
+      currentResolve = null;
+      currentReject = null;
+    }
+  }
+};
+
+/**
+ * Trigger Google OAuth sign-in
  * @returns Promise<GoogleAuthResponse> - Promise that resolves with user credentials or error
  */
 export const signInWithGoogle = (): Promise<GoogleAuthResponse> => {
@@ -144,65 +214,152 @@ export const signInWithGoogle = (): Promise<GoogleAuthResponse> => {
       return;
     }
 
-    // Set up callback for this specific sign-in attempt
-    window.handleGoogleCallback = (response: { credential: string }) => {
-      try {
-        if (response.credential) {
-          // Decode the JWT token to get user info
-          const userInfo = parseJWT(response.credential);
-          resolve({
-            success: true,
-            credential: response.credential,
-            userInfo,
-          });
-        } else {
-          reject(new Error('No credential received from Google'));
-        }
-      } catch (error) {
-        reject(new Error(`Failed to process Google response: ${error instanceof Error ? error.message : String(error)}`));
+    // Store resolve/reject for callback
+    currentResolve = resolve;
+    currentReject = reject;
+
+    // Set up timeout
+    const timeout = setTimeout(() => {
+      if (currentReject) {
+        currentReject(new Error('Google sign-in timed out'));
+        currentResolve = null;
+        currentReject = null;
       }
-    };
+    }, 30000); // 30 second timeout
 
     try {
-      // Trigger the Google sign-in popup
+      // Try using prompt first
       window.google.accounts.id.prompt((notification) => {
-        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          // Fallback to manual sign-in if prompt fails
-          showGoogleOneTap();
+        if (notification.isNotDisplayed()) {
+          console.log('Google prompt not displayed:', notification.getNotDisplayedReason?.());
+          // Try button-based approach as fallback
+          showManualSignIn();
+        } else if (notification.isSkippedMoment()) {
+          console.log('Google prompt skipped:', notification.getSkippedReason?.());
+          // Try button-based approach as fallback
+          showManualSignIn();
         }
       });
     } catch (error) {
-      reject(new Error(`Failed to trigger Google sign-in: ${error instanceof Error ? error.message : String(error)}`));
+      clearTimeout(timeout);
+      console.error('Error triggering Google sign-in:', error);
+      
+      // Try manual sign-in as fallback
+      showManualSignIn();
+    }
+
+    // Clear timeout when promise resolves/rejects
+    const originalResolve = currentResolve;
+    const originalReject = currentReject;
+    
+    if (originalResolve) {
+      currentResolve = (value) => {
+        clearTimeout(timeout);
+        originalResolve(value);
+      };
+    }
+    
+    if (originalReject) {
+      currentReject = (reason) => {
+        clearTimeout(timeout);
+        originalReject(reason);
+      };
     }
   });
 };
 
 /**
- * Show Google One Tap sign-in as fallback
+ * Show manual Google sign-in button as fallback
  */
-const showGoogleOneTap = (): void => {
-  if (window.google?.accounts?.id) {
-    // Create a temporary button element for manual sign-in
-    const tempButton = document.createElement('div');
-    tempButton.style.display = 'none';
-    document.body.appendChild(tempButton);
+const showManualSignIn = (): void => {
+  if (!window.google?.accounts?.id) return;
 
-    window.google.accounts.id.renderButton(tempButton, {
+  // Create a modal overlay for the sign-in button
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+  `;
+
+  const modal = document.createElement('div');
+  modal.style.cssText = `
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+  `;
+
+  const title = document.createElement('h3');
+  title.textContent = 'Sign in with Google';
+  title.style.marginBottom = '1rem';
+
+  const buttonContainer = document.createElement('div');
+  buttonContainer.style.marginBottom = '1rem';
+
+  const cancelButton = document.createElement('button');
+  cancelButton.textContent = 'Cancel';
+  cancelButton.style.cssText = `
+    background: #f1f1f1;
+    border: 1px solid #ddd;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 0.5rem;
+  `;
+
+  cancelButton.onclick = () => {
+    document.body.removeChild(overlay);
+    if (currentReject) {
+      currentReject(new Error('Sign-in cancelled by user'));
+      currentResolve = null;
+      currentReject = null;
+    }
+  };
+
+  // Close on overlay click
+  overlay.onclick = (e) => {
+    if (e.target === overlay) {
+      cancelButton.click();
+    }
+  };
+
+  modal.appendChild(title);
+  modal.appendChild(buttonContainer);
+  modal.appendChild(cancelButton);
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  // Render Google button
+  try {
+    window.google.accounts.id.renderButton(buttonContainer, {
       theme: 'outline',
       size: 'large',
+      type: 'standard',
+      text: 'signin_with',
       click_listener: () => {
-        // This will be handled by the callback
+        // The callback will handle the response
+        document.body.removeChild(overlay);
       }
     });
-
-    // Programmatically click the button
-    setTimeout(() => {
-      const googleButton = tempButton.querySelector<HTMLElement>('[role="button"]');
-      if (googleButton) {
-        googleButton.click();
-      }
-      document.body.removeChild(tempButton);
-    }, 100);
+  } catch (error) {
+    console.error('Error rendering Google button:', error);
+    document.body.removeChild(overlay);
+    if (currentReject) {
+      currentReject(new Error('Failed to render Google sign-in button'));
+      currentResolve = null;
+      currentReject = null;
+    }
   }
 };
 
@@ -276,9 +433,14 @@ export const getGoogleConfig = (): { clientId: string; isConfigured: boolean } =
 if (typeof window !== 'undefined') {
   // Initialize when DOM is ready
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeGoogleAuth);
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeGoogleAuth();
+    });
   } else {
-    initializeGoogleAuth();
+    // Small delay to ensure environment variables are loaded
+    setTimeout(() => {
+      initializeGoogleAuth();
+    }, 100);
   }
 }
 
