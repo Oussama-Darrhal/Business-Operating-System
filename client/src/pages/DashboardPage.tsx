@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
 import { useAuth } from '../utils/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const DashboardPage = () => {
   const { user, logout } = useAuth();
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     setLoading(true);
     try {
       await logout();
+
+      navigate('/login')
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
