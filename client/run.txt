@@ -1,0 +1,8 @@
+docker build -t my-vite-client .
+docker run -d -p 3000:80 my-vite-client
+
+or
+
+docker-compose up --build
+
+http://localhost:3000
