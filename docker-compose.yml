@@ -46,20 +46,20 @@ services:
       - DB_PASSWORD=password
       - SANCTUM_STATEFUL_DOMAINS=localhost:3000
 
-  # React Frontend Application
-  frontend:
+  # React TypeScript Frontend Application (Vite)
+  client:
     build:
-      context: ./frontend
+      context: ./client
       dockerfile: Dockerfile
-    container_name: bos_frontend
+    container_name: bos_client
     restart: unless-stopped
     ports:
       - "3000:3000"
     volumes:
-      - ./frontend:/app
+      - ./client:/app
       - /app/node_modules
     environment:
-      - REACT_APP_API_URL=http://localhost:8000
+      - VITE_API_URL=http://localhost:8000
       - CHOKIDAR_USEPOLLING=true
     networks:
       - bos_network

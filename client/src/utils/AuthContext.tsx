@@ -15,7 +15,7 @@ type User = {
 
 type AuthState = 'loading' | 'authenticated' | 'unauthenticated' | 'error';
 
-type ApiResponse = {
+type AuthApiResponse = {
   success: boolean;
   user?: User;
   token?: string;
@@ -25,7 +25,7 @@ type ApiResponse = {
 
 type LoginResponse = {
   success: boolean;
-  data?: ApiResponse;
+  data?: AuthApiResponse;
   message?: string;
   errors?: Record<string, string>;
 };
@@ -114,7 +114,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
 
       // Verify token with backend
-      const response = await authenticatedApiCall<ApiResponse>('/api/user');
+      const response = await authenticatedApiCall('/api/user') as AuthApiResponse;
 
       if (response.success && response.user) {
         setUser(response.user);
@@ -147,13 +147,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       setError(null);
       
-      const response = await apiCall<ApiResponse>('/api/login', {
+      const response = await apiCall('/api/login', {
         method: 'POST',
         body: JSON.stringify({
           email: email.trim(),
           password: password,
         }),
-      });
+      }) as AuthApiResponse;
 
       if (response.success && response.user && response.token) {
         // Store token securely
@@ -209,10 +209,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         }
       });
 
-      const response = await apiCall<ApiResponse>('/api/register-sme', {
+      const response = await apiCall('/api/register-sme', {
         method: 'POST',
         body: JSON.stringify(apiData),
-      });
+      }) as AuthApiResponse;
 
       if (response.success && response.user && response.token) {
         // Store token securely
@@ -284,13 +284,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
 
       // Send Google credential to backend
-      const response = await apiCall<ApiResponse>('/api/oauth/google/login', {
+      const response = await apiCall('/api/oauth/google/login', {
         method: 'POST',
         body: JSON.stringify({
           credential: googleResponse.credential,
           user_info: googleResponse.userInfo,
         }),
-      });
+      }) as AuthApiResponse;
 
       if (response.success && response.user && response.token) {
         tokenManager.set(response.token);
@@ -346,14 +346,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         };
       }
 
-      const response = await apiCall<ApiResponse>('/api/oauth/google/register', {
+      const response = await apiCall('/api/oauth/google/register', {
         method: 'POST',
         body: JSON.stringify({
           credential: googleResponse.credential,
           user_info: googleResponse.userInfo,
           ...additionalData,
         }),
-      });
+      }) as AuthApiResponse;
 
       if (response.success && response.user && response.token) {
         tokenManager.set(response.token);
@@ -412,7 +412,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     if (authState !== 'authenticated') return false;
     
     try {
-      const response = await authenticatedApiCall<ApiResponse>('/api/user');
+      const response = await authenticatedApiCall('/api/user') as AuthApiResponse;
       
       if (response.success && response.user) {
         setUser(response.user);

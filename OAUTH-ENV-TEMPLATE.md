@@ -2,17 +2,18 @@
 
 Copy these templates to your respective `.env` files and replace with your actual values.
 
-## Frontend .env Template
+## Client (React + Vite) .env Template
 
 ```env
 # Google OAuth Configuration
-REACT_APP_GOOGLE_CLIENT_ID=your_google_client_id_here.apps.googleusercontent.com
+VITE_GOOGLE_CLIENT_ID=your_google_client_id_here.apps.googleusercontent.com
 
 # API Configuration
-REACT_APP_API_BASE_URL=http://localhost:8000
+VITE_API_URL=http://localhost:8000
 
-# Development Settings
-REACT_APP_ENV=development
+# Application Settings
+VITE_APP_NAME="Business Operating System"
+VITE_APP_URL=http://localhost:5173
 ```
 
 ## Backend .env Template
@@ -37,22 +38,19 @@ DB_PASSWORD=your_password
 # Google OAuth Configuration
 GOOGLE_CLIENT_ID=your_google_client_id_here.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your_google_client_secret_here
-GOOGLE_REDIRECT_URI=http://localhost:3000
+GOOGLE_REDIRECT_URI=http://localhost:5173
 
 # Laravel Sanctum
-SANCTUM_STATEFUL_DOMAINS=localhost:3000
-
-# CORS Configuration
-CORS_ALLOWED_ORIGINS=http://localhost:3000
+SANCTUM_STATEFUL_DOMAINS=localhost:5173,127.0.0.1:5173
 
 # Session & Cache
-SESSION_DRIVER=file
+SESSION_DRIVER=database
 SESSION_LIFETIME=120
 SESSION_ENCRYPT=false
 SESSION_PATH=/
 SESSION_DOMAIN=null
 
-CACHE_STORE=file
+CACHE_STORE=database
 CACHE_PREFIX=
 
 # Mail Configuration (Optional)
@@ -74,13 +72,13 @@ LOG_LEVEL=debug
 
 ## Quick Setup Instructions
 
-1. **Frontend Setup:**
+1. **Client Setup:**
    ```bash
-   cd frontend
+   cd client
    cp .env.example .env  # or create new .env file
    # Edit .env with your Google Client ID
    npm install
-   npm start
+   npm run dev
    ```
 
 2. **Backend Setup:**
@@ -100,7 +98,7 @@ LOG_LEVEL=debug
    - Copy Client ID and Secret to your .env files
 
 4. **Test the Integration:**
-   - Visit http://localhost:3000/login
+   - Visit http://localhost:5173/login
    - Click the Google sign-in button
    - Complete OAuth flow
 

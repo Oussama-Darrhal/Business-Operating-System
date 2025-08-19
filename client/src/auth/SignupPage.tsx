@@ -1,10 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '../utils/AuthContext';
+
+// Type definitions for form fields
+type FormFieldName = 'sme_name' | 'user_name' | 'email' | 'password' | 'confirmPassword' | 'business_type' | 'phone' | 'city' | 'country';
+
+type PasswordStrengthColor = 'red' | 'orange' | 'blue' | 'green' | 'gray';
 
 // Zod validation schemas for each step
 const step1Schema = z.object({
@@ -72,7 +77,7 @@ const SignupPage = () => {
   const watchedPassword = watch('password');
 
   // Password strength calculation
-  const getPasswordStrength = (password) => {
+  const getPasswordStrength = (password: string): { score: number; text: string; color: PasswordStrengthColor } => {
     if (!password) return { score: 0, text: 'No password', color: 'gray' };
     
     let score = 0;
@@ -83,7 +88,7 @@ const SignupPage = () => {
     if (/[@$!%*?&]/.test(password)) score++;
     if (password.length >= 12) score++;
 
-    const levels = [
+    const levels: Array<{ score: number; text: string; color: PasswordStrengthColor }> = [
       { score: 0, text: 'No password', color: 'gray' },
       { score: 1, text: 'Very weak', color: 'red' },
       { score: 2, text: 'Weak', color: 'red' },
@@ -96,7 +101,7 @@ const SignupPage = () => {
     return levels.find(level => level.score === score) || levels[0];
   };
 
-  const [passwordStrength, setPasswordStrength] = useState({ score: 0, text: 'No password', color: 'gray' });
+  const [passwordStrength, setPasswordStrength] = useState<{ score: number; text: string; color: PasswordStrengthColor }>({ score: 0, text: 'No password', color: 'gray' });
 
   // Animation variants
   const containerVariants = {
@@ -147,7 +152,7 @@ const SignupPage = () => {
 
   const inputVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: (i) => ({
+    visible: (i: number) => ({
       opacity: 1,
       y: 0,
       transition: {
@@ -184,7 +189,7 @@ const SignupPage = () => {
     setPasswordStrength(getPasswordStrength(watchedPassword));
   }, [watchedPassword]);
 
-  const handleFocus = (fieldName) => {
+  const handleFocus = (fieldName: FormFieldName) => {
     setFocusedField(fieldName);
   };
 
@@ -192,8 +197,8 @@ const SignupPage = () => {
     setFocusedField('');
   };
 
-  const validateStep = async (stepNumber) => {
-    let fieldsToValidate = [];
+  const validateStep = async (stepNumber: number) => {
+    let fieldsToValidate: FormFieldName[] = [];
     
     switch (stepNumber) {
       case 1:
@@ -216,16 +221,16 @@ const SignupPage = () => {
   const handleNext = async () => {
     const isValid = await validateStep(step);
     if (isValid) {
-      setStep(prev => prev + 1);
+      setStep((prev: number) => prev + 1);
     }
   };
 
   const handlePrevious = () => {
-    setStep(prev => prev - 1);
+    setStep((prev: number) => prev - 1);
     clearErrors();
   };
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: z.infer<typeof fullSchema>) => {
     setIsSubmitting(true);
     clearErrors();
 
@@ -240,7 +245,7 @@ const SignupPage = () => {
         // Set server errors
         if (result.errors) {
           Object.entries(result.errors).forEach(([field, message]) => {
-            setError(field, { type: 'server', message });
+            setError(field as FormFieldName, { type: 'server', message });
           });
           
           // Navigate to appropriate step based on errors
@@ -270,15 +275,15 @@ const SignupPage = () => {
     }
   };
 
-  const togglePasswordVisibility = (field) => {
+  const togglePasswordVisibility = (field: string) => {
     if (field === 'password') {
-      setShowPassword(prev => !prev);
+      setShowPassword((prev: boolean) => !prev);
     } else if (field === 'confirmPassword') {
-      setShowConfirmPassword(prev => !prev);
+      setShowConfirmPassword((prev: boolean) => !prev);
     }
   };
 
-  const handleSocialSignup = async (provider) => {
+  const handleSocialSignup = async (provider: string) => {
     if (provider === 'google') {
       setIsSubmitting(true);
       clearErrors();
@@ -318,7 +323,7 @@ const SignupPage = () => {
   const renderPasswordStrengthIndicator = () => {
     if (!watchedPassword) return null;
 
-    const colorMap = {
+    const colorMap: Record<PasswordStrengthColor, string> = {
       red: 'bg-red-500',
       orange: 'bg-orange-500',
       blue: 'bg-blue-500',
@@ -326,7 +331,7 @@ const SignupPage = () => {
       gray: 'bg-gray-300'
     };
 
-    const textColorMap = {
+    const textColorMap: Record<PasswordStrengthColor, string> = {
       red: 'text-red-600',
       orange: 'text-orange-600',
       blue: 'text-blue-600',
@@ -417,7 +422,7 @@ const SignupPage = () => {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
       >
-        <p className="text-sm text-gray-600 font-medium">
+        <p className="text-sm text-slate-600 font-medium">
           Step {step} of 3: <span className="text-purple-600">{
             step === 1 ? 'Business & Admin Info' :
             step === 2 ? 'Security Setup' :
@@ -428,7 +433,7 @@ const SignupPage = () => {
     </motion.div>
   );
 
-  const renderInput = (name, label, type = 'text', required = false, index = 0, placeholder = '') => (
+  const renderInput = (name: FormFieldName, label: string, type = 'text', required = false, index = 0, placeholder = '') => (
     <motion.div 
       custom={index}
       variants={inputVariants}
@@ -439,7 +444,7 @@ const SignupPage = () => {
       <motion.label 
         htmlFor={name} 
         className={`block text-sm font-medium mb-2 transition-colors duration-200 ${
-          focusedField === name ? 'text-purple-700' : 'text-gray-800'
+          focusedField === name ? 'text-purple-700' : 'text-slate-800'
         }`}
         initial={{ opacity: 0, x: -10 }}
         animate={{ opacity: 1, x: 0 }}
@@ -470,7 +475,7 @@ const SignupPage = () => {
                     ? 'border-purple-500 focus:border-purple-600 ring-4 ring-purple-500/20 bg-white bg-opacity-75 shadow-md'
                     : field.value 
                       ? 'border-purple-300 hover:border-purple-400 bg-white bg-opacity-75 shadow-sm'
-                      : 'border-gray-300 hover:border-gray-400 hover:bg-white hover:bg-opacity-75 shadow-sm hover:shadow-md'
+                      : 'border-slate-300 hover:border-slate-400 hover:bg-white hover:bg-opacity-75 shadow-sm hover:shadow-md'
               } focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60 text-gray-900 placeholder-gray-500 text-base font-medium`}
               placeholder={placeholder || `Enter your ${label.toLowerCase()}`}
               aria-describedby={errors[name] ? `${name}-error` : undefined}
@@ -551,7 +556,7 @@ const SignupPage = () => {
     </motion.div>
   );
 
-  const renderPasswordInput = (name, label, showPassword, toggleFunction, index = 0) => (
+  const renderPasswordInput = (name: FormFieldName, label: string, showPassword: boolean, toggleFunction: () => void, index = 0) => (
     <motion.div 
       custom={index}
       variants={inputVariants}
@@ -562,7 +567,7 @@ const SignupPage = () => {
       <motion.label 
         htmlFor={name} 
         className={`block text-sm font-medium mb-2 transition-colors duration-200 ${
-          focusedField === name ? 'text-purple-700' : 'text-gray-800'
+          focusedField === name ? 'text-purple-700' : 'text-slate-800'
         }`}
         initial={{ opacity: 0, x: -10 }}
         animate={{ opacity: 1, x: 0 }}
@@ -593,7 +598,7 @@ const SignupPage = () => {
                     ? 'border-purple-500 focus:border-purple-600 ring-4 ring-purple-500/20 bg-white bg-opacity-75 shadow-md'
                     : field.value 
                       ? 'border-purple-300 hover:border-purple-400 bg-white bg-opacity-75 shadow-sm'
-                      : 'border-gray-300 hover:border-gray-400 hover:bg-white hover:bg-opacity-75 shadow-sm hover:shadow-md'
+                      : 'border-slate-300 hover:border-slate-400 hover:bg-white hover:bg-opacity-75 shadow-sm hover:shadow-md'
               } focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60 text-gray-900 placeholder-gray-500 text-base font-medium`}
               placeholder={`Enter your ${label.toLowerCase()}`}
               aria-describedby={errors[name] ? `${name}-error` : undefined}
@@ -610,9 +615,9 @@ const SignupPage = () => {
         <motion.button
           type="button"
           className={`absolute right-4 top-1/2 -translate-y-1/2 w-9 h-9 p-2 rounded-xl transition-all duration-200 z-20 flex items-center justify-center ${
-            focusedField === name 
-              ? 'bg-white bg-opacity-75 backdrop-blur-md border border-purple-300 shadow-sm' 
-              : 'bg-white bg-opacity-50 backdrop-blur-sm border border-gray-300 hover:bg-white hover:bg-opacity-75 hover:border-gray-400 shadow-sm'
+                          focusedField === name 
+                ? 'bg-white bg-opacity-75 backdrop-blur-md border border-purple-300 shadow-sm' 
+                : 'bg-white bg-opacity-50 backdrop-blur-sm border border-slate-300 hover:bg-white hover:bg-opacity-75 hover:border-slate-400 shadow-sm'
           }`}
           onClick={toggleFunction}
           disabled={isSubmitting}
@@ -691,7 +696,7 @@ const SignupPage = () => {
       </motion.div>
   );
 
-  const renderSelect = (name, label, options, required = false, index = 0) => (
+  const renderSelect = (name: FormFieldName, label: string, options: Array<{value: string; label: string}>, required = false, index = 0) => (
     <motion.div 
       custom={index}
       variants={inputVariants}
@@ -702,7 +707,7 @@ const SignupPage = () => {
       <motion.label 
         htmlFor={name} 
         className={`block text-sm font-medium mb-2 transition-colors duration-200 ${
-          focusedField === name ? 'text-purple-700' : 'text-gray-800'
+          focusedField === name ? 'text-purple-700' : 'text-slate-800'
         }`}
         initial={{ opacity: 0, x: -10 }}
         animate={{ opacity: 1, x: 0 }}
@@ -731,7 +736,7 @@ const SignupPage = () => {
                     ? 'border-purple-500 focus:border-purple-600 ring-4 ring-purple-500/20 bg-white bg-opacity-75 shadow-md'
                     : field.value 
                       ? 'border-purple-300 hover:border-purple-400 bg-white bg-opacity-75 shadow-sm'
-                      : 'border-gray-300 hover:border-gray-100 hover:bg-white hover:bg-opacity-75 shadow-sm hover:shadow-md'
+                      : 'border-slate-300 hover:border-slate-400 hover:bg-white hover:bg-opacity-75 shadow-sm hover:shadow-md'
               } focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60 text-gray-900 text-base font-medium appearance-none cursor-pointer`}
               aria-describedby={errors[name] ? `${name}-error` : undefined}
               aria-invalid={errors[name] ? "true" : "false"}
@@ -741,7 +746,7 @@ const SignupPage = () => {
               }}
             >
               <option value="">{`Select ${label.toLowerCase()}`}</option>
-              {options.map((option) => (
+              {options.map((option: {value: string; label: string}) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -753,10 +758,10 @@ const SignupPage = () => {
         {/* Custom dropdown arrow */}
         <motion.div 
           className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-10"
-          animate={{ 
-            rotate: focusedField === name ? 180 : 0,
-            color: focusedField === name ? '#8b5cf6' : '#6b7280'
-          }}
+                      animate={{ 
+              rotate: focusedField === name ? 180 : 0,
+              color: focusedField === name ? '#a855f7' : '#6b7280'
+            }}
           transition={{ duration: 0.3 }}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -936,15 +941,15 @@ const SignupPage = () => {
     >
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-300"></div>
+          <div className="w-full border-t border-slate-300"></div>
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-4 bg-gradient-to-r from-purple-50 to-blue-50 text-gray-600 font-medium rounded-full">
+          <span className="px-4 bg-gradient-to-r from-slate-50 to-blue-50 text-slate-600 font-medium rounded-full">
             Or continue with
           </span>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 gap-3">
         <motion.button
           type="button"
@@ -954,7 +959,7 @@ const SignupPage = () => {
           whileTap="tap"
           onClick={() => handleSocialSignup('google')}
           disabled={isSubmitting}
-          className="w-full flex items-center justify-center px-6 py-4 border-2 border-gray-300 rounded-2xl bg-white bg-opacity-70 backdrop-blur-md text-gray-700 font-semibold hover:bg-white hover:bg-opacity-90 hover:border-gray-400 focus:outline-none focus:ring-4 focus:ring-gray-500/20 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+          className="w-full flex items-center justify-center px-6 py-4 border-2 border-slate-300 rounded-2xl bg-white bg-opacity-70 backdrop-blur-md text-slate-700 font-semibold hover:bg-white hover:bg-opacity-90 hover:border-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-500/20 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
         >
           <motion.div
             animate={isSubmitting ? { rotate: 360 } : { rotate: 0 }}
@@ -996,7 +1001,7 @@ const SignupPage = () => {
         <h2 className="text-3xl font-bold text-gray-900 mb-3">
           Create Your Business Account
         </h2>
-        <p className="text-gray-600 text-lg">
+        <p className="text-slate-600 text-lg">
           Let's start with your business and admin information
         </p>
       </motion.div>
@@ -1061,7 +1066,7 @@ const SignupPage = () => {
         <h2 className="text-3xl font-bold text-gray-900 mb-3">
           Secure Your Account
         </h2>
-        <p className="text-gray-600 text-lg">
+        <p className="text-slate-600 text-lg">
           Create a strong password to protect your business data
         </p>
       </motion.div>
@@ -1086,7 +1091,7 @@ const SignupPage = () => {
           whileTap="tap"
           onClick={handlePrevious}
           disabled={isSubmitting}
-          className="px-8 py-4 bg-white bg-opacity-70 backdrop-blur-md border-2 border-gray-300 text-gray-700 font-semibold rounded-2xl hover:bg-white hover:bg-opacity-90 hover:border-gray-400 focus:outline-none focus:ring-4 focus:ring-gray-500/20 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+          className="px-8 py-4 bg-white bg-opacity-70 backdrop-blur-md border-2 border-slate-300 text-slate-700 font-semibold rounded-2xl hover:bg-white hover:bg-opacity-90 hover:border-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-500/20 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
         >
           <span className="flex items-center">
             <motion.svg 
@@ -1149,7 +1154,7 @@ const SignupPage = () => {
         <h2 className="text-3xl font-bold text-gray-900 mb-3">
           Additional Information
         </h2>
-        <p className="text-gray-600 text-lg">
+        <p className="text-slate-600 text-lg">
           Help us personalize your experience (optional)
         </p>
       </motion.div>
@@ -1175,7 +1180,7 @@ const SignupPage = () => {
           whileTap="tap"
           onClick={handlePrevious}
           disabled={isSubmitting}
-          className="px-8 py-4 bg-white bg-opacity-70 backdrop-blur-md border-2 border-gray-300 text-gray-700 font-semibold rounded-2xl hover:bg-white hover:bg-opacity-90 hover:border-gray-400 focus:outline-none focus:ring-4 focus:ring-gray-500/20 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+          className="px-8 py-4 bg-white bg-opacity-70 backdrop-blur-md border-2 border-slate-300 text-slate-700 font-semibold rounded-2xl hover:bg-white hover:bg-opacity-90 hover:border-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-500/20 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
         >
           <span className="flex items-center">
             <motion.svg 
@@ -1228,11 +1233,11 @@ const SignupPage = () => {
   );
 
   return (
-    <div className="min-h-screen min-w-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div className="min-h-screen min-w-screen bg-gradient-to-br from-slate-50 via-slate-50 to-slate-100 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div 
-          className="absolute -top-40 -right-40 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-70"
+          className="absolute -top-40 -right-40 w-80 h-80 bg-purple-100 rounded-full mix-blend-multiply filter blur-xl opacity-40"
           animate={{ 
             scale: [1, 1.2, 1],
             rotate: [0, 180, 360]
@@ -1244,7 +1249,7 @@ const SignupPage = () => {
           }}
         />
         <motion.div 
-          className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-70"
+          className="absolute -bottom-40 -left-40 w-80 h-80 bg-slate-200 rounded-full mix-blend-multiply filter blur-xl opacity-40"
           animate={{ 
             scale: [1.2, 1, 1.2],
             rotate: [360, 180, 0]
@@ -1256,7 +1261,7 @@ const SignupPage = () => {
           }}
         />
         <motion.div 
-          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-50"
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-purple-50 rounded-full mix-blend-multiply filter blur-xl opacity-30"
           animate={{ 
             scale: [1, 1.3, 1],
             rotate: [0, -180, -360]
@@ -1367,7 +1372,7 @@ const SignupPage = () => {
               transition={{ duration: 0.5, delay: 0.8 }}
               className="mt-8 text-center"
             >
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-slate-600">
                 Already have an account?{' '}
                 <Link 
                   to="/login" 
@@ -1385,7 +1390,7 @@ const SignupPage = () => {
               transition={{ duration: 0.5, delay: 1.0 }}
               className="mt-6 text-center"
             >
-              <p className="text-xs text-gray-500 leading-relaxed">
+              <p className="text-xs text-slate-500 leading-relaxed">
                 By creating an account, you agree to our{' '}
                 <a href="/terms" className="text-purple-600 hover:text-purple-700 underline">
                   Terms of Service

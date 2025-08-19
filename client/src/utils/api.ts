@@ -1,13 +1,21 @@
 // API configuration
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+// Export the ApiResponse type for use in other files
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data: T | null;
+  message: string;
+  errors: any;
+  timestamp: string;
+}
 
 // Token management utilities
 export const tokenManager = {
-  get: () => localStorage.getItem('auth-token'),
-  set: (token) => localStorage.setItem('auth-token', token),
-  remove: () => localStorage.removeItem('auth-token'),
-  isExpired: (token) => {
+  get: (): string | null => localStorage.getItem('auth-token'),
+  set: (token: string): void => localStorage.setItem('auth-token', token),
+  remove: (): void => localStorage.removeItem('auth-token'),
+  isExpired: (token: string | null): boolean => {
     if (!token) return true;
     try {
       // Basic JWT expiry check (if you're using JWT)
@@ -21,7 +29,7 @@ export const tokenManager = {
 };
 
 // Standardized API response structure
-const createResponse = (success, data = null, message = '', errors = null) => ({
+const createResponse = <T = any>(success: boolean, data: T | null = null, message = '', errors: any = null): ApiResponse<T> => ({
   success,
   data,
   message,
@@ -30,7 +38,7 @@ const createResponse = (success, data = null, message = '', errors = null) => ({
 });
 
 // Error handler that creates consistent error responses
-const handleApiError = (error, response = null) => {
+const handleApiError = (error: any, response: Response | null = null): ApiResponse => {
   console.error('API Error:', error);
   
   // Network errors
@@ -65,12 +73,12 @@ const handleApiError = (error, response = null) => {
 
 /**
  * Enhanced API call function with better error handling and token management
- * @param {string} endpoint - The API endpoint (e.g., '/api/login')
- * @param {object} options - Fetch options (method, headers, body, etc.)
- * @param {boolean} requiresAuth - Whether this endpoint requires authentication
- * @returns {Promise<object>} - Standardized response object
+ * @param endpoint - The API endpoint (e.g., '/api/login')
+ * @param options - Fetch options (method, headers, body, etc.)
+ * @param requiresAuth - Whether this endpoint requires authentication
+ * @returns Standardized response object
  */
-export const apiCall = async (endpoint, options = {}, requiresAuth = false) => {
+export const apiCall = async <T = any>(endpoint: string, options: RequestInit = {}, requiresAuth = false): Promise<ApiResponse<T>> => {
   const url = `${API_BASE_URL}${endpoint}`;
   
   console.log('[API URL]', url);
@@ -147,8 +155,8 @@ export const apiCall = async (endpoint, options = {}, requiresAuth = false) => {
 /**
  * Convenient wrapper for authenticated API calls
  */
-export const authenticatedApiCall = (endpoint, options = {}) => {
-  return apiCall(endpoint, options, true);
+export const authenticatedApiCall = <T = any>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> => {
+  return apiCall<T>(endpoint, options, true);
 };
 
 /**

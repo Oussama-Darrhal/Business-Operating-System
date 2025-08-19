@@ -1,38 +1,44 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './utils/AuthContext';
 import LoginPage from './auth/LoginPage';
 import SignupPage from './auth/SignupPage';
 import DashboardPage from './pages/DashboardPage';
+import { ReactNode } from 'react';
 
-// Protected Route component
-const ProtectedRoute = ({ children }) => {
-  const { token, loading } = useAuth();
+// Protected Route component - requires authentication
+const ProtectedRoute = ({ children }: { children: ReactNode }) => {
+  const { isAuthenticated, isLoading } = useAuth();
 
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-slate-50 to-slate-100">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-200 border-t-purple-600"></div>
+          <p className="text-slate-600 font-medium">Loading...</p>
+        </div>
       </div>
     );
   }
 
-  return token ? children : <Navigate to="/login" replace />;
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
 };
 
-// Public Route component (redirect to dashboard if logged in)
-const PublicRoute = ({ children }) => {
-  const { token, loading } = useAuth();
+// Public Route component - redirects authenticated users
+const PublicRoute = ({ children }: { children: ReactNode }) => {
+  const { isAuthenticated, isLoading } = useAuth();
 
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-slate-50 to-slate-100">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-200 border-t-purple-600"></div>
+          <p className="text-slate-600 font-medium">Loading...</p>
+        </div>
       </div>
     );
   }
 
-  return token ? <Navigate to="/dashboard" replace /> : children;
+  return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
 };
 
 function App() {
@@ -41,31 +47,31 @@ function App() {
       <Router>
         <div className="App">
           <Routes>
-            {/* Public routes */}
+            {/* Public routes - redirect to dashboard if authenticated */}
             <Route 
               path="/login" 
               element={
-                // <PublicRoute>
+                <PublicRoute>
                   <LoginPage />
-                // </PublicRoute>
+                </PublicRoute>
               } 
             />
             <Route 
               path="/signup" 
               element={
-                // <PublicRoute>
+                <PublicRoute>
                   <SignupPage />
-                // </PublicRoute>
+                </PublicRoute>
               } 
             />
             
-            {/* Protected routes */}
+            {/* Protected routes - require authentication */}
             <Route 
               path="/dashboard" 
               element={
-                // <ProtectedRoute>
+                <ProtectedRoute>
                   <DashboardPage />
-                // </ProtectedRoute>
+                </ProtectedRoute>
               } 
             />
             
