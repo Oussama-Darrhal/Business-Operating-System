@@ -41,7 +41,8 @@ const GOOGLE_CONFIG: GoogleConfig = {
 let googleInitialized = false;
 let googleScript: HTMLScriptElement | null = null;
 let currentResolve: ((value: GoogleAuthResponse) => void) | null = null;
-let currentReject: ((reason?: any) => void) | null = null;
+let currentReject: ((reason?: unknown) => void) | null = null;
+let currentCleanup: (() => void) | null = null;
 
 // Extend Window interface to include Google types
 declare global {
@@ -159,7 +160,6 @@ const setupGoogleCallback = () => {
     callback: handleGoogleResponse,
     auto_select: GOOGLE_CONFIG.auto_select,
     cancel_on_tap_outside: GOOGLE_CONFIG.cancel_on_tap_outside,
-    use_fedcm_for_prompt: false, // Disable FedCM to avoid CORS issues
   });
 
   // Set global callback
@@ -214,29 +214,57 @@ export const signInWithGoogle = (): Promise<GoogleAuthResponse> => {
       return;
     }
 
+    // Clean up any previous state
+    if (currentCleanup) {
+      currentCleanup();
+      currentCleanup = null;
+    }
+
     // Store resolve/reject for callback
     currentResolve = resolve;
     currentReject = reject;
 
-    // Set up timeout
+    // Set up shorter timeout for better UX
     const timeout = setTimeout(() => {
       if (currentReject) {
         currentReject(new Error('Google sign-in timed out'));
         currentResolve = null;
         currentReject = null;
       }
-    }, 30000); // 30 second timeout
+    }, 10000); // Reduced to 10 seconds
+
+    // Add window focus listener to detect popup cancellation
+    let focusHandler: (() => void) | null = null;
+    let focusTimeout: ReturnType<typeof setTimeout> | null = null;
+
+    const setupFocusHandler = () => {
+      focusHandler = () => {
+        // When window regains focus, wait a short time to see if we get a response
+        if (focusTimeout) clearTimeout(focusTimeout);
+        focusTimeout = setTimeout(() => {
+          if (currentReject) {
+            currentReject(new Error('Google sign-in was cancelled'));
+            currentResolve = null;
+            currentReject = null;
+            if (focusHandler) {
+              window.removeEventListener('focus', focusHandler);
+            }
+          }
+        }, 1000); // 1 second after focus returns
+      };
+      window.addEventListener('focus', focusHandler);
+    };
 
     try {
       // Try using prompt first
       window.google.accounts.id.prompt((notification) => {
         if (notification.isNotDisplayed()) {
           console.log('Google prompt not displayed:', notification.getNotDisplayedReason?.());
-          // Try button-based approach as fallback
+          setupFocusHandler();
           showManualSignIn();
         } else if (notification.isSkippedMoment()) {
           console.log('Google prompt skipped:', notification.getSkippedReason?.());
-          // Try button-based approach as fallback
+          setupFocusHandler();
           showManualSignIn();
         }
       });
@@ -244,17 +272,23 @@ export const signInWithGoogle = (): Promise<GoogleAuthResponse> => {
       clearTimeout(timeout);
       console.error('Error triggering Google sign-in:', error);
       
-      // Try manual sign-in as fallback
+      setupFocusHandler();
       showManualSignIn();
     }
 
-    // Clear timeout when promise resolves/rejects
+    // Clear timeout and focus handler when promise resolves/rejects
     const originalResolve = currentResolve;
     const originalReject = currentReject;
     
     if (originalResolve) {
       currentResolve = (value) => {
         clearTimeout(timeout);
+        if (focusTimeout) clearTimeout(focusTimeout);
+        if (focusHandler) window.removeEventListener('focus', focusHandler);
+        if (currentCleanup) {
+          currentCleanup();
+          currentCleanup = null;
+        }
         originalResolve(value);
       };
     }
@@ -262,6 +296,12 @@ export const signInWithGoogle = (): Promise<GoogleAuthResponse> => {
     if (originalReject) {
       currentReject = (reason) => {
         clearTimeout(timeout);
+        if (focusTimeout) clearTimeout(focusTimeout);
+        if (focusHandler) window.removeEventListener('focus', focusHandler);
+        if (currentCleanup) {
+          currentCleanup();
+          currentCleanup = null;
+        }
         originalReject(reason);
       };
     }
@@ -274,87 +314,96 @@ export const signInWithGoogle = (): Promise<GoogleAuthResponse> => {
 const showManualSignIn = (): void => {
   if (!window.google?.accounts?.id) return;
 
-  // Create a modal overlay for the sign-in button
-  const overlay = document.createElement('div');
-  overlay.style.cssText = `
+  // Create a hidden container for the Google button to automatically trigger it
+  const hiddenContainer = document.createElement('div');
+  hiddenContainer.style.cssText = `
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10000;
+    top: -1000px;
+    left: -1000px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
   `;
+  
+  document.body.appendChild(hiddenContainer);
 
-  const modal = document.createElement('div');
-  modal.style.cssText = `
-    background: white;
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    max-width: 400px;
-    width: 90%;
-  `;
+  // Track if button was clicked to avoid multiple attempts
+  let buttonClicked = false;
 
-  const title = document.createElement('h3');
-  title.textContent = 'Sign in with Google';
-  title.style.marginBottom = '1rem';
-
-  const buttonContainer = document.createElement('div');
-  buttonContainer.style.marginBottom = '1rem';
-
-  const cancelButton = document.createElement('button');
-  cancelButton.textContent = 'Cancel';
-  cancelButton.style.cssText = `
-    background: #f1f1f1;
-    border: 1px solid #ddd;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-left: 0.5rem;
-  `;
-
-  cancelButton.onclick = () => {
-    document.body.removeChild(overlay);
-    if (currentReject) {
-      currentReject(new Error('Sign-in cancelled by user'));
-      currentResolve = null;
-      currentReject = null;
-    }
-  };
-
-  // Close on overlay click
-  overlay.onclick = (e) => {
-    if (e.target === overlay) {
-      cancelButton.click();
-    }
-  };
-
-  modal.appendChild(title);
-  modal.appendChild(buttonContainer);
-  modal.appendChild(cancelButton);
-  overlay.appendChild(modal);
-  document.body.appendChild(overlay);
-
-  // Render Google button
+  // Render Google button and automatically click it
   try {
-    window.google.accounts.id.renderButton(buttonContainer, {
+    window.google.accounts.id.renderButton(hiddenContainer, {
       theme: 'outline',
       size: 'large',
       type: 'standard',
       text: 'signin_with',
       click_listener: () => {
-        // The callback will handle the response
-        document.body.removeChild(overlay);
+        buttonClicked = true;
+        // The callback will handle the response, cleanup container quickly
+        setTimeout(() => {
+          if (document.body.contains(hiddenContainer)) {
+            document.body.removeChild(hiddenContainer);
+          }
+        }, 500);
       }
     });
+
+    // Automatically click the Google button after a short delay
+    const clickTimeout = setTimeout(() => {
+      if (buttonClicked) return; // Avoid double clicking
+      
+      const googleButton = hiddenContainer.querySelector('[role="button"]') as HTMLElement;
+      if (googleButton) {
+        googleButton.click();
+        buttonClicked = true;
+      } else {
+        // Fallback: trigger click on any button in the container
+        const anyButton = hiddenContainer.querySelector('div[role="button"]') as HTMLElement;
+        if (anyButton) {
+          anyButton.click();
+          buttonClicked = true;
+        } else {
+          // If we can't find the button, reject the promise quickly
+          if (currentReject) {
+            currentReject(new Error('Could not automatically trigger Google sign-in'));
+            currentResolve = null;
+            currentReject = null;
+          }
+          if (document.body.contains(hiddenContainer)) {
+            document.body.removeChild(hiddenContainer);
+          }
+        }
+      }
+    }, 100);
+
+    // Faster cleanup in case something goes wrong
+    const cleanupTimeout = setTimeout(() => {
+      if (document.body.contains(hiddenContainer)) {
+        document.body.removeChild(hiddenContainer);
+      }
+      // If button wasn't clicked and no response received, reject faster
+      if (!buttonClicked && currentReject) {
+        currentReject(new Error('Google sign-in initialization failed'));
+        currentResolve = null;
+        currentReject = null;
+      }
+    }, 3000); // Reduced from 5 seconds to 3 seconds
+
+    // Store timeouts for cleanup
+    const cleanupTimeouts = () => {
+      clearTimeout(clickTimeout);
+      clearTimeout(cleanupTimeout);
+    };
+
+    // Store cleanup function globally so it can be called from main auth flow
+    currentCleanup = cleanupTimeouts;
+
   } catch (error) {
     console.error('Error rendering Google button:', error);
-    document.body.removeChild(overlay);
+    if (document.body.contains(hiddenContainer)) {
+      document.body.removeChild(hiddenContainer);
+    }
     if (currentReject) {
       currentReject(new Error('Failed to render Google sign-in button'));
       currentResolve = null;
@@ -391,6 +440,7 @@ const parseJWT = (token: string): GoogleUserInfo => {
       sub: payload.sub, // Google user ID
     };
   } catch (error) {
+    console.error('Error parsing Google JWT token:', error);
     throw new Error('Failed to parse Google JWT token');
   }
 };

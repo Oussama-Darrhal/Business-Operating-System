@@ -1,15 +1,20 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { apiCall, authenticatedApiCall, tokenManager } from './api';
 import { signInWithGoogle, initializeGoogleAuth, signOutFromGoogle } from './googleAuth';
+import { permissionService, Permission, UserRole } from '../services/permissionService';
 
 // Define types for your auth system
 type User = {
   id: string;
   email: string;
   role: string;
+  role_id?: number;
+  role_name?: string;
+  role_color?: string;
   sme_id?: string;
   sme_name?: string;
   auth_provider?: 'google' | 'email';
+  permissions?: Permission[];
   // Add other user properties as needed
 };
 
@@ -100,6 +105,27 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Clear error when needed
   const clearError = useCallback(() => setError(null), []);
 
+  // Initialize permissions for user
+  const initializePermissions = useCallback(async (user: User) => {
+    try {
+      if (user.permissions && user.role_name) {
+        const userRole: UserRole = {
+          id: user.role_id || 0,
+          name: user.role_name,
+          description: '',
+          color: user.role_color || 'gray',
+          is_custom: false,
+        };
+        await permissionService.initialize(user.permissions, userRole);
+      } else {
+        // Fallback: fetch permissions from API
+        await permissionService.initialize();
+      }
+    } catch (error) {
+      console.error('Failed to initialize permissions:', error);
+    }
+  }, []);;
+
   // Check authentication status
   const checkAuth = useCallback(async (): Promise<boolean> => {
     try {
@@ -118,12 +144,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       if (response.success && response.user) {
         setUser(response.user);
+        await initializePermissions(response.user);
         setAuthState('authenticated');
         return true;
       } else {
         // Token is invalid
         tokenManager.remove();
         setUser(null);
+        permissionService.clear();
         setAuthState('unauthenticated');
         return false;
       }
@@ -131,6 +159,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       console.error('Auth check failed:', error);
       tokenManager.remove();
       setUser(null);
+      permissionService.clear();
       setAuthState('error');
       setError('Failed to verify authentication. Please try logging in again.');
       return false;
@@ -161,6 +190,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         
         // Update auth state
         setUser(response.user);
+        await initializePermissions(response.user);
         setAuthState('authenticated');
         
         return {
@@ -220,6 +250,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         
         // Update auth state
         setUser(response.user);
+        await initializePermissions(response.user);
         setAuthState('authenticated');
         
         return {
@@ -260,6 +291,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       // Always clean up local state
       tokenManager.remove();
       setUser(null);
+      permissionService.clear();
       setAuthState('unauthenticated');
       setError(null);
     }
@@ -295,6 +327,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       if (response.success && response.user && response.token) {
         tokenManager.set(response.token);
         setUser(response.user);
+        await initializePermissions(response.user);
         setAuthState('authenticated');
         
         return {
@@ -358,6 +391,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       if (response.success && response.user && response.token) {
         tokenManager.set(response.token);
         setUser(response.user);
+        await initializePermissions(response.user);
         setAuthState('authenticated');
         
         return {
@@ -416,6 +450,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       
       if (response.success && response.user) {
         setUser(response.user);
+        await initializePermissions(response.user);
         return true;
       } else {
         await checkAuth();

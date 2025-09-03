@@ -21,16 +21,17 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'sme_id',
+        'role_id',
         'name',
         'email',
         'email_verified_at',
         'password',
-        'role',
         'status',
         'last_login_at',
         'google_id',
         'auth_provider',
         'avatar',
+        'phone',
     ];
 
     /**
@@ -54,7 +55,6 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'last_login_at' => 'datetime',
             'password' => 'hashed',
-            'role' => 'string',
             'status' => 'string',
         ];
     }
@@ -65,5 +65,45 @@ class User extends Authenticatable
     public function sme(): BelongsTo
     {
         return $this->belongsTo(SME::class);
+    }
+
+    /**
+     * Get the role that belongs to the user.
+     */
+    public function userRole(): BelongsTo
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
+
+    /**
+     * Check if user has specific permission for a module.
+     */
+    public function hasPermission(string $moduleId, string $permission): bool
+    {
+        if (!$this->userRole) {
+            return false;
+        }
+
+        return $this->userRole->hasPermission($moduleId, $permission);
+    }
+
+    /**
+     * Get all permissions for a module.
+     */
+    public function getModulePermissions(string $moduleId): array
+    {
+        if (!$this->userRole) {
+            return [];
+        }
+
+        return $this->userRole->getModulePermissions($moduleId);
+    }
+
+    /**
+     * Get user's role name.
+     */
+    public function getRoleName(): ?string
+    {
+        return $this->userRole?->name;
     }
 }

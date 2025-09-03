@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\SME;
 use App\Models\User;
+use App\Services\ActivityLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -94,6 +95,13 @@ class AuthController extends Controller
                 'email' => $result['user']->email,
             ]);
 
+            // Log activity
+            ActivityLogService::logSmeAction('sme.created', $result['sme']->id, [
+                'sme_name' => $result['sme']->name,
+                'admin_user_id' => $result['user']->id,
+                'admin_email' => $result['user']->email,
+            ]);
+
             return response()->json([
                 'success' => true,
                 'message' => 'SME account created successfully! Welcome to BOS.',
@@ -166,6 +174,13 @@ class AuthController extends Controller
                     'user_agent' => $request->userAgent(),
                 ]);
 
+                // Log activity for failed login
+                ActivityLogService::logAuth('auth.login_failed', [
+                    'email' => $email,
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                ]);
+
                 return response()->json([
                     'success' => false,
                     'message' => 'Invalid email or password. Please check your credentials and try again.'
@@ -215,6 +230,13 @@ class AuthController extends Controller
                 'sme_id' => $user->sme_id,
                 'email' => $email,
                 'ip' => $request->ip(),
+            ]);
+
+            // Log activity for successful login
+            ActivityLogService::logAuth('auth.login', [
+                'user_id' => $user->id,
+                'sme_id' => $user->sme_id,
+                'email' => $email,
             ]);
 
             return response()->json([
@@ -269,6 +291,13 @@ class AuthController extends Controller
                 'email' => $user->email,
             ]);
 
+            // Log activity for logout
+            ActivityLogService::logAuth('auth.logout', [
+                'user_id' => $user->id,
+                'sme_id' => $user->sme_id,
+                'email' => $user->email,
+            ]);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Logout successful. Thank you for using BOS!'
@@ -298,10 +327,18 @@ class AuthController extends Controller
     public function user(Request $request)
     {
         try {
-            $user = $request->user()->load('sme');
+            $user = $request->user()->load(['sme', 'userRole.rolePermissions.permission']);
 
             // Update last seen timestamp
             $user->update(['last_login_at' => now()]);
+
+            // Get user permissions
+            $permissions = [];
+            $role = $user->userRole;
+
+            if ($role) {
+                $permissions = $role->getFormattedPermissions();
+            }
 
             return response()->json([
                 'success' => true,
@@ -309,12 +346,16 @@ class AuthController extends Controller
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
-                    'role' => $user->role,
+                    'role' => $user->role, // Keep for backward compatibility
+                    'role_id' => $user->role_id,
+                    'role_name' => $role?->name,
+                    'role_color' => $role?->color,
                     'status' => $user->status,
                     'sme_id' => $user->sme_id,
                     'sme_name' => $user->sme->name,
                     'last_login_at' => $user->last_login_at,
                     'created_at' => $user->created_at,
+                    'permissions' => $permissions,
                 ]
             ], 200);
 
@@ -328,6 +369,55 @@ class AuthController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to retrieve user profile.',
+                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get the authenticated user's permissions.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getUserPermissions(Request $request)
+    {
+        try {
+            $user = $request->user()->load(['userRole.rolePermissions.permission']);
+            $role = $user->userRole;
+
+            if (!$role) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User has no assigned role.',
+                    'permissions' => []
+                ], 200);
+            }
+
+            $permissions = $role->getFormattedPermissions();
+
+            return response()->json([
+                'success' => true,
+                'permissions' => $permissions,
+                'role' => [
+                    'id' => $role->id,
+                    'name' => $role->name,
+                    'description' => $role->description,
+                    'color' => $role->color,
+                    'is_custom' => $role->is_custom,
+                ]
+            ], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to retrieve user permissions', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'user_id' => $request->user()->id ?? 'unknown',
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve user permissions.',
                 'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
             ], 500);
         }
@@ -498,6 +588,11 @@ class AuthController extends Controller
                 'google_id' => $googleUser['google_id'],
             ]);
 
+            // Load role and permissions for response
+            $user->load(['userRole.rolePermissions.permission']);
+            $role = $user->userRole;
+            $permissions = $role ? $role->getFormattedPermissions() : [];
+
             return response()->json([
                 'success' => true,
                 'message' => 'Google login successful. Welcome back!',
@@ -506,12 +601,16 @@ class AuthController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'role' => $user->role,
+                    'role_id' => $user->role_id,
+                    'role_name' => $role?->name,
+                    'role_color' => $role?->color,
                     'status' => $user->status,
                     'sme_id' => $user->sme_id,
                     'sme_name' => $user->sme->name,
                     'avatar' => $user->avatar,
                     'auth_provider' => 'google',
                     'last_login_at' => $user->last_login_at,
+                    'permissions' => $permissions,
                 ],
                 'token' => $token,
             ], 200);

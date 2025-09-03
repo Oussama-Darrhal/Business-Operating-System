@@ -157,6 +157,7 @@ const LoginPage: React.FC = () => {
     }
   };
 
+
   const togglePasswordVisibility = () => {
     setShowPassword(prev => !prev);
   };
@@ -570,7 +571,7 @@ const LoginPage: React.FC = () => {
                   whileTap="tap"
                   onClick={() => handleSocialLogin('google')}
                   disabled={isSubmitting}
-                  className="w-full flex items-center justify-center px-6 py-4 border-2 border-slate-300 rounded-2xl bg-white bg-opacity-70 backdrop-blur-md text-slate-700 font-semibold hover:bg-white hover:bg-opacity-90 hover:border-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-500/20 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+                  className="w-full flex items-center justify-center px-6 py-4 border-2 border-purple-300 rounded-2xl bg-purple-500 bg-opacity-70 backdrop-blur-md text-white font-semibold hover:bg-purple-600 hover:bg-opacity-90 hover:border-purple-400 focus:outline-none focus:ring-4 focus:ring-purple-500/20 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
                 >
                   <motion.div
                     animate={isSubmitting ? { rotate: 360 } : { rotate: 0 }}
@@ -603,7 +604,7 @@ const LoginPage: React.FC = () => {
                   <div className="w-full border-t border-slate-300/50"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="bg-white/30 backdrop-blur-md px-4 py-2 text-slate-600 font-medium rounded-xl border border-white/30">
+                  <span className="bg-purple-500/30 backdrop-blur-md px-4 py-2 text-white font-medium rounded-xl border border-purple-300/30">
                     Or continue with email
                   </span>
                 </div>
@@ -646,7 +647,7 @@ const LoginPage: React.FC = () => {
                       <motion.div
                         className={`w-5 h-5 rounded-md border-2 mr-3 flex items-center justify-center transition-all duration-200 ${field.value
                             ? 'bg-purple-500 border-purple-500 shadow-md'
-                            : 'bg-white/30 border-slate-300 backdrop-blur-md hover:border-purple-400 hover:bg-white/40'
+                            : 'bg-purple-500/30 border-purple-300 backdrop-blur-md hover:border-purple-400 hover:bg-purple-500/40'
                           }`}
                         animate={{
                           backgroundColor: field.value ? '#a855f7' : 'rgba(255,255,255,0.3)',

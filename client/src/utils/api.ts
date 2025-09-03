@@ -198,4 +198,38 @@ export const uploadFile = async (endpoint, file, onProgress = null) => {
   } catch (error) {
     return handleApiError(error);
   }
+};
+
+/**
+ * Axios-like API client for compatibility with existing code
+ */
+export const api = {
+  get: async <T = any>(endpoint: string): Promise<{ data: ApiResponse<T> }> => {
+    const response = await authenticatedApiCall<T>(endpoint, { method: 'GET' });
+    return { data: response };
+  },
+
+  post: async <T = any>(endpoint: string, data?: any): Promise<{ data: ApiResponse<T> }> => {
+    const response = await authenticatedApiCall<T>(endpoint, {
+      method: 'POST',
+      body: data ? JSON.stringify(data) : undefined,
+    });
+    return { data: response };
+  },
+
+  put: async <T = any>(endpoint: string, data?: any): Promise<{ data: ApiResponse<T> }> => {
+    const response = await authenticatedApiCall<T>(endpoint, {
+      method: 'PUT',
+      body: data ? JSON.stringify(data) : undefined,
+    });
+    return { data: response };
+  },
+
+  delete: async <T = any>(endpoint: string, config?: { data?: any }): Promise<{ data: ApiResponse<T> }> => {
+    const response = await authenticatedApiCall<T>(endpoint, {
+      method: 'DELETE',
+      body: config?.data ? JSON.stringify(config.data) : undefined,
+    });
+    return { data: response };
+  },
 }; 

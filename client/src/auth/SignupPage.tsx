@@ -944,7 +944,7 @@ const SignupPage = () => {
           <div className="w-full border-t border-slate-300"></div>
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-4 bg-gradient-to-r from-slate-50 to-blue-50 text-slate-600 font-medium rounded-full">
+          <span className="px-4 bg-gradient-to-r from-purple-500/30 to-purple-600/30 text-white font-medium rounded-full">
             Or continue with
           </span>
         </div>
@@ -959,7 +959,7 @@ const SignupPage = () => {
           whileTap="tap"
           onClick={() => handleSocialSignup('google')}
           disabled={isSubmitting}
-          className="w-full flex items-center justify-center px-6 py-4 border-2 border-slate-300 rounded-2xl bg-white bg-opacity-70 backdrop-blur-md text-slate-700 font-semibold hover:bg-white hover:bg-opacity-90 hover:border-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-500/20 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+          className="w-full flex items-center justify-center px-6 py-4 border-2 border-purple-300 rounded-2xl bg-purple-500 bg-opacity-70 backdrop-blur-md text-white font-semibold hover:bg-purple-600 hover:bg-opacity-90 hover:border-purple-400 focus:outline-none focus:ring-4 focus:ring-purple-500/20 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
         >
           <motion.div
             animate={isSubmitting ? { rotate: 360 } : { rotate: 0 }}
@@ -1091,7 +1091,7 @@ const SignupPage = () => {
           whileTap="tap"
           onClick={handlePrevious}
           disabled={isSubmitting}
-          className="px-8 py-4 bg-white bg-opacity-70 backdrop-blur-md border-2 border-slate-300 text-slate-700 font-semibold rounded-2xl hover:bg-white hover:bg-opacity-90 hover:border-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-500/20 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+          className="px-8 py-4 bg-purple-500 bg-opacity-70 backdrop-blur-md border-2 border-purple-300 text-white font-semibold rounded-2xl hover:bg-purple-600 hover:bg-opacity-90 hover:border-purple-400 focus:outline-none focus:ring-4 focus:ring-purple-500/20 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
         >
           <span className="flex items-center">
             <motion.svg 
@@ -1180,7 +1180,7 @@ const SignupPage = () => {
           whileTap="tap"
           onClick={handlePrevious}
           disabled={isSubmitting}
-          className="px-8 py-4 bg-white bg-opacity-70 backdrop-blur-md border-2 border-slate-300 text-slate-700 font-semibold rounded-2xl hover:bg-white hover:bg-opacity-90 hover:border-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-500/20 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+          className="px-8 py-4 bg-purple-500 bg-opacity-70 backdrop-blur-md border-2 border-purple-300 text-white font-semibold rounded-2xl hover:bg-purple-600 hover:bg-opacity-90 hover:border-purple-400 focus:outline-none focus:ring-4 focus:ring-purple-500/20 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
         >
           <span className="flex items-center">
             <motion.svg 
@@ -1233,7 +1233,7 @@ const SignupPage = () => {
   );
 
   return (
-    <div className="min-h-screen min-w-screen bg-gradient-to-br from-slate-50 via-slate-50 to-slate-100 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-50 to-slate-100 py-12 px-4 sm:px-6 lg:px-8 pb-24 relative overflow-auto">
       {/* Background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div 
@@ -1278,7 +1278,7 @@ const SignupPage = () => {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="max-w-md mx-auto relative z-10"
+        className="max-w-md mx-auto relative z-10 w-full"
       >
         <motion.div
           variants={cardVariants}

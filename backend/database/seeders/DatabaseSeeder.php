@@ -12,6 +12,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Call other seeders
+        $this->call([
+            SMESeeder::class,
+            PermissionSeeder::class,  // Seed permissions first
+            RoleSeeder::class,        // Then seed roles which depend on permissions
+        ]);
+
         // Seed Review Sources
         $reviewSources = [
             ['name' => 'Google Reviews', 'is_active' => true],

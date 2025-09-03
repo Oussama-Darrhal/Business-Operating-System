@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths' => ['*', 'api/*', 'sanctum/csrf-cookie', 'activity-logs/*'],
 
     'allowed_methods' => ['*'],
 
@@ -24,6 +24,7 @@ return [
         'http://localhost:5173', // Vite default port
         'http://127.0.0.1:3000',
         'http://127.0.0.1:5173',
+        'http://localhost:8000',
         // Add your production domain here
         // 'https://yourdomain.com',
     ],
