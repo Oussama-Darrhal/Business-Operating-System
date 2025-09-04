@@ -228,7 +228,7 @@ function App() {
                 <PermissionProtectedRoute moduleId="ai-analysis" permission="view">
                   <AIAnalysisPage />
                 </PermissionProtectedRoute>
-              } 
+              }
             />
             <Route 
               path="/response-management" 
