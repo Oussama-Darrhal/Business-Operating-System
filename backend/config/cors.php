@@ -25,8 +25,7 @@ return [
         'http://127.0.0.1:3000',
         'http://127.0.0.1:5173',
         'http://localhost:8000',
-        // Add your production domain here
-        // 'https://yourdomain.com',
+
     ],
 
     'allowed_origins_patterns' => [],
@@ -40,6 +39,3 @@ return [
     'supports_credentials' => true,
 
 ];
-
-// Alternative: In your .env file, you can also set:
-// SANCTUM_STATEFUL_DOMAINS=localhost:3000,localhost:5173,127.0.0.1:3000,127.0.0.1:5173

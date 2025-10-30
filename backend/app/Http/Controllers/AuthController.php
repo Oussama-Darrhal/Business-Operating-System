@@ -56,7 +56,6 @@ class AuthController extends Controller
                 ], 422);
             }
 
-            // Use database transaction for data consistency
             $result = DB::transaction(function () use ($request) {
                 // Create SME
                 $sme = SME::create([
@@ -215,7 +214,7 @@ class AuthController extends Controller
                 ], 403);
             }
 
-            // Revoke old tokens (optional - for better security)
+            // Revoke old tokens
             $user->tokens()->delete();
 
             // Generate new Sanctum token
@@ -346,7 +345,7 @@ class AuthController extends Controller
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
-                    'role' => $user->role, // Keep for backward compatibility
+                    'role' => $user->role,
                     'role_id' => $user->role_id,
                     'role_name' => $role?->name,
                     'role_color' => $role?->color,

@@ -17,12 +17,12 @@ class ActivityLogController extends Controller
         try {
             $user = $request->user();
 
-            if (!$user->sme_id) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User must be connected to an SME to access activity logs',
-                ], 400);
-            }
+            // if (!$user->sme_id) {
+            //     return response()->json([
+            //         'success' => false,
+            //         'message' => 'User must be connected to an SME to access activity logs',
+            //     ], 400);
+            // }
 
             // Validate filters
             $request->validate([

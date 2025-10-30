@@ -124,135 +124,81 @@ const ActivityLogsPage: React.FC = () => {
 
   const LogDetailModal: React.FC<{ log: ActivityLog }> = ({ log }) => (
     <Dialog open={!!selectedLog} onOpenChange={() => setSelectedLog(null)}>
-      <DialogContent className="max-w-4xl max-h-[85vh] bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border-gray-600 shadow-2xl" showCloseButton={false}>
-        <DialogHeader className="pb-6 border-b border-gray-700 relative">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setSelectedLog(null)}
-            className="absolute top-2 right-2 h-10 w-10 rounded-full hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </Button>
-          <DialogTitle className="flex items-center gap-4 text-2xl font-bold text-white pr-16">
-            <div className="flex items-center gap-3">
-              {getSeverityIcon(log.severity_level)}
-              <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                {log.action_display_name}
-              </span>
-            </div>
-            <div className="ml-auto">
-              <Badge
-                variant={log.severity_level === 'high' ? 'destructive' : 'secondary'}
-                className={`px-4 py-2 text-sm font-semibold uppercase tracking-wider ${
-                  log.severity_level === 'high' 
-                    ? 'bg-red-500/20 text-red-400 border-red-500/40' 
-                    : log.severity_level === 'medium'
-                    ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40'
-                    : 'bg-green-500/20 text-green-400 border-green-500/40'
-                }`}
-              >
-                {log.severity_level} Severity
-              </Badge>
-            </div>
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-gradient-to-br from-gray-900 to-gray-800 border-gray-700">
+        <DialogHeader className="pb-4">
+          <DialogTitle className="flex items-center gap-3 text-xl font-semibold text-white">
+            {getSeverityIcon(log.severity_level)}
+            {log.action_display_name}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="py-6 space-y-8 overflow-y-auto max-h-[60vh] pr-2">
-          {/* Date & Time Section */}
-          <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-            <div className="flex items-center gap-3 mb-3">
-              <Calendar className="h-5 w-5 text-purple-400" />
-              <h3 className="text-lg font-semibold text-white">Date & Time</h3>
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 gap-6">
+            <div className="space-y-1">
+              <label className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Date & Time</label>
+              <p className="text-white font-medium">{formatDate(log.created_at)}</p>
             </div>
-            <p className="text-xl text-white font-mono bg-gray-700 px-4 py-2 rounded-md">
-              {formatDate(log.created_at)}
-            </p>
+            <div className="space-y-1">
+              <label className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Severity</label>
+              <Badge
+                variant={log.severity_level === 'high' ? 'destructive' : 'secondary'}
+                className="font-medium"
+              >
+                {log.severity_level}
+              </Badge>
+            </div>
           </div>
 
           {log.user && (
-            <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-              <div className="flex items-center gap-3 mb-3">
-                <User className="h-5 w-5 text-blue-400" />
-                <h3 className="text-lg font-semibold text-white">User</h3>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500/30 to-purple-600/30 rounded-full flex items-center justify-center border-2 border-blue-500/40 shadow-lg">
-                  <User className="h-8 w-8 text-blue-300" />
+            <div className="space-y-1">
+              <label className="text-sm font-semibold text-gray-400 uppercase tracking-wide">User</label>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500/20 to-purple-600/20 rounded-full flex items-center justify-center border border-gray-600">
+                  <User className="h-5 w-5 text-blue-400" />
                 </div>
-                <div className="space-y-1">
-                  <p className="text-xl text-white font-semibold">{log.user.name}</p>
-                  <p className="text-blue-300 font-mono text-sm bg-gray-700 px-3 py-1 rounded-md">
-                    {log.user.email}
-                  </p>
+                <div>
+                  <p className="text-white font-medium">{log.user.name}</p>
+                  <p className="text-gray-400 text-sm">{log.user.email}</p>
                 </div>
               </div>
             </div>
           )}
 
           {log.entity_type && (
-            <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-5 h-5 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full flex items-center justify-center">
-                  <div className="w-2 h-2 bg-white rounded-full"></div>
-                </div>
-                <h3 className="text-lg font-semibold text-white">Entity</h3>
-              </div>
-              <div className="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 rounded-lg p-4">
-                <p className="text-white font-medium text-lg">
-                  <span className="text-emerald-300 font-semibold">{log.entity_type}</span>
-                  <span className="text-gray-300 mx-2">•</span>
-                  <span className="text-emerald-200 font-mono">#{log.entity_id}</span>
-                </p>
-              </div>
+            <div className="space-y-1">
+              <label className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Entity</label>
+              <p className="text-white font-medium">
+                <span className="bg-gradient-to-r from-blue-500/20 to-purple-600/20 text-blue-300 px-3 py-1 rounded-md border border-gray-600">
+                  {log.entity_type} #{log.entity_id}
+                </span>
+              </p>
             </div>
           )}
 
           {log.ip_address && (
-            <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-5 h-5 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
-                  <div className="w-2 h-2 bg-white rounded-full"></div>
-                </div>
-                <h3 className="text-lg font-semibold text-white">IP Address</h3>
-              </div>
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
-                <p className="text-amber-200 font-mono font-bold text-lg tracking-wider">
-                  {log.ip_address}
-                </p>
-              </div>
+            <div className="space-y-1">
+              <label className="text-sm font-semibold text-gray-400 uppercase tracking-wide">IP Address</label>
+              <p className="text-white font-mono font-medium bg-gray-800 px-3 py-2 rounded-md border border-gray-600">
+                {log.ip_address}
+              </p>
             </div>
           )}
 
           {log.user_agent && (
-            <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-5 h-5 bg-gradient-to-br from-violet-500 to-purple-500 rounded-full flex items-center justify-center">
-                  <div className="w-2 h-2 bg-white rounded-full"></div>
-                </div>
-                <h3 className="text-lg font-semibold text-white">User Agent</h3>
-              </div>
-              <div className="bg-violet-500/10 border border-violet-500/30 rounded-lg p-4">
-                <p className="text-violet-200 text-sm leading-relaxed break-words">
-                  {log.user_agent}
-                </p>
-              </div>
+            <div className="space-y-1">
+              <label className="text-sm font-semibold text-gray-400 uppercase tracking-wide">User Agent</label>
+              <p className="text-gray-300 break-all bg-gray-800 p-3 rounded-md border border-gray-600 text-sm">
+                {log.user_agent}
+              </p>
             </div>
           )}
 
           {log.details && Object.keys(log.details).length > 0 && (
-            <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-5 h-5 bg-gradient-to-br from-rose-500 to-pink-500 rounded-full flex items-center justify-center">
-                  <div className="w-2 h-2 bg-white rounded-full"></div>
-                </div>
-                <h3 className="text-lg font-semibold text-white">Details</h3>
-              </div>
-              <div className="bg-rose-500/10 border border-rose-500/30 rounded-lg p-4">
-                <pre className="text-sm text-rose-200 leading-relaxed overflow-x-auto whitespace-pre-wrap">
-                  {JSON.stringify(log.details, null, 2)}
-                </pre>
-              </div>
+            <div className="space-y-1">
+              <label className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Details</label>
+              <pre className="text-sm bg-gray-800 p-4 rounded-lg overflow-x-auto border border-gray-600 text-gray-300">
+                {JSON.stringify(log.details, null, 2)}
+              </pre>
             </div>
           )}
         </div>
@@ -269,7 +215,7 @@ const ActivityLogsPage: React.FC = () => {
             <div>
               <h1 className="text-2xl font-bold text-white">Activity Logs</h1>
               <p className="text-gray-300 mt-1">
-                Monitor system activities and user actions across your organization. Track who did what, when, and where for security and compliance.
+                Monitor system activities and user actions across your organization
               </p>
             </div>
 
@@ -278,10 +224,10 @@ const ActivityLogsPage: React.FC = () => {
                 <Button
                   variant="outline"
                   onClick={() => setShowFilters(!showFilters)}
-                  className="flex items-center gap-2 border-gray-600 text-gray-300 bg-gray-800 hover:bg-gray-700 hover:text-white hover:border-gray-500"
+                  className="flex items-center gap-2 bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white"
                 >
                   <Filter className="h-4 w-4" />
-                  {showFilters ? 'Hide Filters' : 'Show Filters'}
+                  Filters
                 </Button>
 
                 <Button
@@ -298,65 +244,32 @@ const ActivityLogsPage: React.FC = () => {
 
           {/* Filters */}
           {showFilters && (
-            <div className="mb-4 p-4 bg-gray-800/50 border border-gray-700 rounded-lg">
-              <h3 className="text-sm font-medium text-gray-300 mb-2">💡 Filter Tips:</h3>
-              <ul className="text-xs text-gray-400 space-y-1">
-                <li>• <strong>Search:</strong> Find specific actions, users, or details across all logs</li>
-                <li>• <strong>Action Type:</strong> Filter by what was done (login, create, update, delete, etc.)</li>
-                <li>• <strong>User:</strong> See actions performed by a specific person</li>
-                <li>• <strong>Entity Type:</strong> Focus on what was affected (users, orders, products, etc.)</li>
-                <li>• <strong>Date Range:</strong> Narrow down to specific time periods</li>
-              </ul>
-            </div>
-          )}
-          
-          {/* Filters Card */}
-          {showFilters && (
-            <Card className="w-full bg-gradient-to-br from-gray-900 to-gray-800 border-gray-700 shadow-xl">
+            <Card className="bg-gradient-to-br from-gray-900 to-gray-800 border-gray-700">
               <CardHeader className="pb-4">
-                <CardTitle className="text-lg font-semibold text-white flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <Filter className="h-5 w-5 text-purple-400" />
-                    Filters
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setShowFilters(false)}
-                    className="h-8 w-8 rounded-full hover:bg-gray-700 text-gray-400 hover:text-white"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </CardTitle>
+                <CardTitle className="text-lg font-semibold text-white">Filters</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="pt-0">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div>
-                    <label className="text-sm font-medium mb-2 block text-gray-300">
-                      Search
-                      <span className="text-xs text-gray-500 ml-1">(searches action names, user names, and details)</span>
-                    </label>
+                    <label className="text-sm font-medium text-gray-300 mb-2 block">Search</label>
                     <Input
                       placeholder="Search logs..."
                       value={filters.search || ''}
                       onChange={(e) => handleFilterChange('search', e.target.value)}
-                      className="w-full bg-gray-800 border-gray-600 text-white placeholder:text-gray-400 focus:border-purple-500 focus:ring-purple-500"
+                      className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-purple-500 focus:ring-purple-500"
                     />
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium mb-2 block text-gray-300">
-                      Action Type
-                      <span className="text-xs text-gray-500 ml-1">(what was done - login, create, update, delete, etc.)</span>
-                    </label>
-                    <Select value={filters.action || 'all'} onValueChange={(value) => handleFilterChange('action', value === 'all' ? undefined : value)}>
-                      <SelectTrigger className="w-full bg-gray-800 border-gray-600 text-white focus:border-purple-500 focus:ring-purple-500">
+                    <label className="text-sm font-medium text-gray-300 mb-2 block">Action</label>
+                    <Select value={filters.action || ''} onValueChange={(value) => handleFilterChange('action', value)}>
+                      <SelectTrigger className="bg-gray-800 border-gray-600 text-white focus:border-purple-500 focus:ring-purple-500">
                         <SelectValue placeholder="All actions" />
                       </SelectTrigger>
                       <SelectContent className="bg-gray-800 border-gray-600">
-                        <SelectItem value="all" className="text-white hover:bg-gray-700 focus:bg-gray-700">All actions</SelectItem>
+                        <SelectItem value="">All actions</SelectItem>
                         {filterOptions.actions.map((action) => (
-                          <SelectItem key={action.value} value={action.value} className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                          <SelectItem key={action.value} value={action.value} className="text-white hover:bg-gray-700">
                             {action.label}
                           </SelectItem>
                         ))}
@@ -365,18 +278,15 @@ const ActivityLogsPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium mb-2 block text-gray-300">
-                      User
-                      <span className="text-xs text-gray-500 ml-1">(who performed the action)</span>
-                    </label>
-                    <Select value={filters.user_id?.toString() || 'all'} onValueChange={(value) => handleFilterChange('user_id', value === 'all' ? undefined : parseInt(value))}>
-                      <SelectTrigger className="w-full bg-gray-800 border-gray-600 text-white focus:border-purple-500 focus:ring-purple-500">
+                    <label className="text-sm font-medium text-gray-300 mb-2 block">User</label>
+                    <Select value={filters.user_id?.toString() || ''} onValueChange={(value) => handleFilterChange('user_id', value ? parseInt(value) : undefined)}>
+                      <SelectTrigger className="bg-gray-800 border-gray-600 text-white focus:border-purple-500 focus:ring-purple-500">
                         <SelectValue placeholder="All users" />
                       </SelectTrigger>
                       <SelectContent className="bg-gray-800 border-gray-600">
-                        <SelectItem value="all" className="text-white hover:bg-gray-700 focus:bg-gray-700">All users</SelectItem>
+                        <SelectItem value="">All users</SelectItem>
                         {filterOptions.users.map((user) => (
-                          <SelectItem key={user.value} value={user.value.toString()} className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                          <SelectItem key={user.value} value={user.value.toString()} className="text-white hover:bg-gray-700">
                             {user.label}
                           </SelectItem>
                         ))}
@@ -385,18 +295,15 @@ const ActivityLogsPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium mb-2 block text-gray-300">
-                      Entity Type
-                      <span className="text-xs text-gray-500 ml-1">(what was affected - user, order, product, etc.)</span>
-                    </label>
-                    <Select value={filters.entity_type || 'all'} onValueChange={(value) => handleFilterChange('entity_type', value === 'all' ? undefined : value)}>
-                      <SelectTrigger className="w-full bg-gray-800 border-gray-600 text-white focus:border-purple-500 focus:ring-purple-500">
+                    <label className="text-sm font-medium text-gray-300 mb-2 block">Entity Type</label>
+                    <Select value={filters.entity_type || ''} onValueChange={(value) => handleFilterChange('entity_type', value)}>
+                      <SelectTrigger className="bg-gray-800 border-gray-600 text-white focus:border-purple-500 focus:ring-purple-500">
                         <SelectValue placeholder="All entities" />
                       </SelectTrigger>
                       <SelectContent className="bg-gray-800 border-gray-600">
-                        <SelectItem value="all" className="text-white hover:bg-gray-700 focus:bg-gray-700">All entities</SelectItem>
+                        <SelectItem value="">All entities</SelectItem>
                         {filterOptions.entity_types.map((type) => (
-                          <SelectItem key={type.value} value={type.value} className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                          <SelectItem key={type.value} value={type.value} className="text-white hover:bg-gray-700">
                             {type.label}
                           </SelectItem>
                         ))}
@@ -405,28 +312,22 @@ const ActivityLogsPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium mb-2 block text-gray-300">
-                      Start Date
-                      <span className="text-xs text-gray-500 ml-1">(logs from this date onwards)</span>
-                    </label>
+                    <label className="text-sm font-medium text-gray-300 mb-2 block">Start Date</label>
                     <Input
                       type="date"
                       value={filters.start_date || ''}
                       onChange={(e) => handleFilterChange('start_date', e.target.value)}
-                      className="w-full bg-gray-800 border-gray-600 text-white focus:border-purple-500 focus:ring-purple-500"
+                      className="bg-gray-800 border-gray-600 text-white focus:border-purple-500 focus:ring-purple-500"
                     />
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium mb-2 block text-gray-300">
-                      End Date
-                      <span className="text-xs text-gray-500 ml-1">(logs up to this date)</span>
-                    </label>
+                    <label className="text-sm font-medium text-gray-300 mb-2 block">End Date</label>
                     <Input
                       type="date"
                       value={filters.end_date || ''}
                       onChange={(e) => handleFilterChange('end_date', e.target.value)}
-                      className="w-full bg-gray-800 border-gray-600 text-white focus:border-purple-500 focus:ring-purple-500"
+                      className="bg-gray-800 border-gray-600 text-white focus:border-purple-500 focus:ring-purple-500"
                     />
                   </div>
 
@@ -434,7 +335,7 @@ const ActivityLogsPage: React.FC = () => {
                     <Button
                       variant="outline"
                       onClick={clearFilters}
-                      className="flex items-center gap-2 bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white hover:border-gray-500"
+                      className="flex items-center gap-2 border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
                     >
                       <X className="h-4 w-4" />
                       Clear Filters
@@ -480,30 +381,12 @@ const ActivityLogsPage: React.FC = () => {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-gray-600">
-                        <th className="text-left py-4 px-6 font-semibold text-gray-300">
-                          Action
-                          <div className="text-xs font-normal text-gray-500 mt-1">What was done</div>
-                        </th>
-                        <th className="text-left py-4 px-6 font-semibold text-gray-300">
-                          User
-                          <div className="text-xs font-normal text-gray-500 mt-1">Who did it</div>
-                        </th>
-                        <th className="text-left py-4 px-6 font-semibold text-gray-300">
-                          Entity
-                          <div className="text-xs font-normal text-gray-500 mt-1">What was affected</div>
-                        </th>
-                        <th className="text-left py-4 px-6 font-semibold text-gray-300">
-                          IP Address
-                          <div className="text-xs font-normal text-gray-500 mt-1">Where it came from</div>
-                        </th>
-                        <th className="text-left py-4 px-6 font-semibold text-gray-300">
-                          Date & Time
-                          <div className="text-xs font-normal text-gray-500 mt-1">When it happened</div>
-                        </th>
-                        <th className="text-left py-4 px-6 font-semibold text-gray-300">
-                          Actions
-                          <div className="text-xs font-normal text-gray-500 mt-1">View details</div>
-                        </th>
+                        <th className="text-left py-4 px-6 font-semibold text-gray-300">Action</th>
+                        <th className="text-left py-4 px-6 font-semibold text-gray-300">User</th>
+                        <th className="text-left py-4 px-6 font-semibold text-gray-300">Entity</th>
+                        <th className="text-left py-4 px-6 font-semibold text-gray-300">IP Address</th>
+                        <th className="text-left py-4 px-6 font-semibold text-gray-300">Date & Time</th>
+                        <th className="text-left py-4 px-6 font-semibold text-gray-300">Actions</th>
                       </tr>
                     </thead>
                     <tbody>

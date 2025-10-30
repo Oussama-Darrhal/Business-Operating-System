@@ -114,11 +114,11 @@ class ActivityLogService
             $search = $filters['search'];
             $query->where(function ($q) use ($search) {
                 $q->where('action', 'like', "%{$search}%")
-                  ->orWhere('entity_type', 'like', "%{$search}%")
-                  ->orWhereHas('user', function ($userQuery) use ($search) {
-                      $userQuery->where('name', 'like', "%{$search}%")
-                               ->orWhere('email', 'like', "%{$search}%");
-                  });
+                    ->orWhere('entity_type', 'like', "%{$search}%")
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                        $userQuery->where('name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -235,6 +235,3 @@ class ActivityLogService
         ];
     }
 }
-
-
-
