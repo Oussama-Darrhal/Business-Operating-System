@@ -15,12 +15,12 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('role_id');
             $table->string('module_id', 50);
-            $table->json('permissions'); // JSON array of permission types: ['view', 'create', 'edit', 'delete']
+            $table->json('permissions');
             $table->timestamps();
 
             $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
             $table->foreign('module_id')->references('module_id')->on('permissions')->onDelete('cascade');
-            $table->unique(['role_id', 'module_id']); // One permission set per role-module combination
+            $table->unique(['role_id', 'module_id']);
             $table->index('role_id');
         });
     }

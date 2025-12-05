@@ -8,15 +8,15 @@ use App\Http\Middleware\TenantScopeMiddleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// Public authentication routes (no authentication required)
+// Public authentication routes
 Route::post('/register-sme', [AuthController::class, 'registerSme']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// OAuth routes (no authentication required)
+// OAuth routes
 Route::post('/oauth/google/login', [AuthController::class, 'googleLogin']);
 Route::post('/oauth/google/register', [AuthController::class, 'googleRegister']);
 
-// Protected routes (require authentication)
+// Protected routes
 Route::middleware(['auth:sanctum'])->group(function () {
     // Basic authenticated user endpoint
     Route::get('/user', [AuthController::class, 'user']);
@@ -24,7 +24,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/refresh-token', [AuthController::class, 'refreshToken']);
 
-    // SME management routes (user can access even without SME connection)
+    // SME management routes
     Route::prefix('sme')->group(function () {
         Route::get('/profile', [SMEController::class, 'getProfile']);
         Route::put('/profile', [SMEController::class, 'updateProfile']);
@@ -33,7 +33,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/create', [SMEController::class, 'createSME']);
     });
 
-    // Multi-tenant protected routes (automatically scoped to user's SME)
+    // Multi-tenant protected routes
     Route::middleware([TenantScopeMiddleware::class])->group(function () {
         // Role management routes
         Route::prefix('roles')->group(function () {

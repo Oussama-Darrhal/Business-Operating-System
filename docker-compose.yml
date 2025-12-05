@@ -17,7 +17,7 @@ services:
     networks:
       - bos_network
 
-  # Main Backend Service (Laravel 12 - Modular Monolith)
+  # Main Backend Service
   backend:
     build:
       context: ./backend
@@ -46,7 +46,7 @@ services:
       - DB_PASSWORD=password
       - SANCTUM_STATEFUL_DOMAINS=localhost:3000
 
-  # React TypeScript Frontend Application (Vite)
+  # React TypeScript Frontend Application
   client:
     build:
       context: ./client
